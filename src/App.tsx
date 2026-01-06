@@ -23,11 +23,13 @@ import KebaktianMingguPage from "./pages/cms/ibadah/KebaktianMingguPage";
 import BuletinPage from "./pages/cms/konten/BuletinPage";
 import TokoJemaatPage from "./pages/cms/toko/TokoJemaatPage";
 import DataPendetaPage from "./pages/cms/pendeta/DataPendetaPage";
-
-// NEW: Data Jemaat Pages
 import JemaatListPage from "./pages/cms/jemaat/JemaatListPage";
 import JemaatFormPage from "./pages/cms/jemaat/JemaatFormPage";
 import JemaatWilayahPage from "./pages/cms/jemaat/JemaatWilayahPage";
+
+// NEW: Pelayanan Pages
+import DaftarPelayananPage from "./pages/cms/pelayanan/DaftarPelayananPage";
+import PenugasanPage from "./pages/cms/pelayanan/PenugasanPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -76,17 +78,16 @@ const App = () => (
               <Route element={<DashboardLayout />}>
                 <Route path="/" element={<DashboardOverview />} />
                 
-                {/* Manajemen Data: JEMAAT COMPLETED */}
+                {/* Manajemen Data */}
                 <Route path="/jemaat" element={<JemaatListPage />} />
                 <Route path="/jemaat/create" element={<JemaatFormPage />} />
                 <Route path="/jemaat/edit/:id" element={<JemaatFormPage />} />
                 <Route path="/jemaat/wilayah" element={<JemaatWilayahPage />} />
-                
-                {/* Data Pendeta */}
                 <Route path="/pendeta" element={<DataPendetaPage />} />
                 
-                <Route path="/pelayan" element={<ModulePlaceholder title="Pelayan" icon={Users} />} />
-                <Route path="/pelayan/penugasan" element={<ModulePlaceholder title="Penugasan Pelayan" icon={Users} />} />
+                {/* NEW: Pelayanan & SDM */}
+                <Route path="/pelayan" element={<DaftarPelayananPage />} />
+                <Route path="/pelayan/penugasan" element={<PenugasanPage />} />
 
                 {/* Pelayanan & Ibadah */}
                 <Route path="/event/kalender" element={<ModulePlaceholder title="Kalender Event" icon={Calendar} />} />
@@ -99,7 +100,6 @@ const App = () => (
                 <Route path="/banner/top" element={<BannerTopPage />} />
                 <Route path="/banner/middle" element={<BannerMiddlePage />} />
                 <Route path="/banner/bottom" element={<BannerBottomPage />} />
-
                 <Route path="/konten/artikel" element={<ModulePlaceholder title="Artikel" />} />
                 <Route path="/konten/komsel" element={<BeritaKomselPage />} />
                 <Route path="/konten/buletin" element={<BuletinPage />} />
