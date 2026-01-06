@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Church, Loader2 } from "lucide-react";
+import { Church, Loader2, Phone } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -21,8 +21,12 @@ import { useAuthStore } from "@/stores/auth-store";
 import { UserRole } from "@/types";
 
 const formSchema = z.object({
-  email: z.string().email({ message: "Email tidak valid" }),
-  password: z.string().min(6, { message: "Password minimal 6 karakter" }),
+  no_handphone: z.string()
+    .min(1, { message: "Nomor handphone wajib diisi" })
+    .regex(/^08[0-9]+$/, { message: "Format nomor tidak valid (harus angka diawali 08)" })
+    .min(10, { message: "Nomor terlalu pendek" })
+    .max(14, { message: "Nomor terlalu panjang" }),
+  password: z.string().min(1, { message: "Password wajib diisi" }),
 });
 
 const LoginPage = () => {
@@ -37,7 +41,7 @@ const LoginPage = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
+      no_handphone: "",
       password: "",
     },
   });
@@ -51,18 +55,18 @@ const LoginPage = () => {
       let role: UserRole = "JEMAAT";
       let name = "Jemaat User";
 
-      // Simulasi role berdasarkan email
-      if (values.email.includes("admin")) {
+      // Simulasi role berdasarkan nomor (Mock)
+      if (values.no_handphone === "08123456789") { // Admin Mock
         role = "ADMIN";
         name = "Administrator";
-      } else if (values.email.includes("sekretaris")) {
+      } else if (values.no_handphone === "08111111111") {
         role = "SEKRETARIS";
         name = "Sekretaris Gereja";
       }
 
       const mockUser = {
         id: "usr_123",
-        email: values.email,
+        email: `${values.no_handphone}@placeholder.com`, // Fallback email
         name: name,
         role: role,
         avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
@@ -89,7 +93,7 @@ const LoginPage = () => {
           </div>
           <CardTitle className="text-2xl font-bold">Gereja Digital CMS</CardTitle>
           <CardDescription>
-            Masukkan email dan password untuk masuk ke sistem
+            Masuk menggunakan nomor handphone terdaftar
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -97,12 +101,20 @@ const LoginPage = () => {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="email"
+                name="no_handphone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Nomor Handphone</FormLabel>
                     <FormControl>
-                      <Input placeholder="admin@gereja.org" {...field} />
+                      <div className="relative">
+                        <Phone className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                          type="text" 
+                          placeholder="08xxxxxxxxxx" 
+                          className="pl-9"
+                          {...field} 
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -137,8 +149,8 @@ const LoginPage = () => {
         <CardFooter className="flex flex-col space-y-2 text-center text-sm text-muted-foreground">
           <div className="bg-muted p-3 rounded text-xs w-full text-left">
             <p className="font-semibold mb-1">Akun Demo:</p>
-            <p>Admin: admin@test.com (pass: bebas)</p>
-            <p>Jemaat: user@test.com (pass: bebas)</p>
+            <p>Admin: 08123456789 (Pass: bebas)</p>
+            <p>Jemaat: 08999999999 (Pass: bebas)</p>
           </div>
         </CardFooter>
       </Card>
