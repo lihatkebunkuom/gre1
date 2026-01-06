@@ -15,6 +15,7 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { Church, Users, Wallet, Calendar, Image } from "lucide-react";
 import BannerTopPage from "./pages/cms/banner/BannerTopPage";
 import BannerMiddlePage from "./pages/cms/banner/BannerMiddlePage";
+import BannerBottomPage from "./pages/cms/banner/BannerBottomPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -79,7 +80,7 @@ const App = () => (
                 {/* Konten & Media */}
                 <Route path="/banner/top" element={<BannerTopPage />} />
                 <Route path="/banner/middle" element={<BannerMiddlePage />} />
-                <Route path="/banner/bottom" element={<ModulePlaceholder title="Banner Bottom" icon={Image} />} />
+                <Route path="/banner/bottom" element={<BannerBottomPage />} />
 
                 <Route path="/konten/artikel" element={<ModulePlaceholder title="Artikel" />} />
                 <Route path="/konten/media" element={<ModulePlaceholder title="Media" />} />
