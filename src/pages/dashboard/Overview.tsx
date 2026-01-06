@@ -1,8 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, CreditCard, CalendarCheck, TrendingUp, ArrowUpRight } from "lucide-react";
+import { Users, CreditCard, CalendarCheck, TrendingUp, ArrowUpRight, Download, Plus } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { PageHeader } from "@/components/common/PageHeader";
+import { StatusBadge } from "@/components/common/StatusBadge";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { toast } from "sonner";
 
+// Mock Data
 const stats = [
   {
     title: "Total Jemaat",
@@ -35,22 +40,38 @@ const attendanceData = [
   { name: 'Minggu 5', total: 950 },
 ];
 
+const recentActivities = [
+  { action: "Pendaftaran Jemaat Baru", user: "Budi Santoso", time: "2 jam yang lalu", status: "success" },
+  { action: "Input Persembahan Minggu", user: "Bendahara", time: "5 jam yang lalu", status: "info" },
+  { action: "Update Jadwal Ibadah", user: "Sekretariat", time: "Kemarin", status: "warning" },
+  { action: "Export Laporan Bulanan", user: "Ketua Majelis", time: "2 hari lalu", status: "neutral" },
+];
+
 const DashboardOverview = () => {
+  const handleDownload = () => {
+    toast.success("Laporan sedang diunduh...");
+  };
+
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-          <p className="text-muted-foreground mt-1">
-            Ringkasan aktivitas gereja dan statistik jemaat terkini.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline">Unduh Laporan</Button>
-          <Button>+ Tambah Jemaat Baru</Button>
-        </div>
-      </div>
+      {/* 1. Page Header Component */}
+      <PageHeader 
+        title="Dashboard Overview" 
+        description="Ringkasan aktivitas gereja dan statistik jemaat terkini."
+      >
+        <ConfirmDialog
+          trigger={<Button variant="outline"><Download className="mr-2 h-4 w-4"/> Unduh Laporan</Button>}
+          title="Unduh Laporan Bulanan?"
+          description="Laporan akan diunduh dalam format PDF. Proses ini mungkin memakan waktu beberapa detik."
+          confirmLabel="Unduh Sekarang"
+          onConfirm={handleDownload}
+        />
+        <Button>
+          <Plus className="mr-2 h-4 w-4"/> Tambah Jemaat
+        </Button>
+      </PageHeader>
 
+      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {stats.map((stat, index) => (
           <Card key={index} className="hover:shadow-md transition-shadow">
@@ -130,22 +151,23 @@ const DashboardOverview = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {[
-                { action: "Pendaftaran Jemaat Baru", user: "Budi Santoso", time: "2 jam yang lalu" },
-                { action: "Input Persembahan Minggu", user: "Bendahara", time: "5 jam yang lalu" },
-                { action: "Update Jadwal Ibadah", user: "Sekretariat", time: "Kemarin" },
-                { action: "Export Laporan Bulanan", user: "Ketua Majelis", time: "2 hari lalu" },
-              ].map((item, i) => (
+              {recentActivities.map((item, i) => (
                 <div key={i} className="flex items-start gap-4 pb-4 border-b last:border-0 last:pb-0">
                   <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
                     <ArrowUpRight className="h-4 w-4 text-primary" />
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none">{item.action}</p>
+                  <div className="space-y-1 flex-1">
+                    <div className="flex justify-between items-start">
+                      <p className="text-sm font-medium leading-none mb-1">{item.action}</p>
+                      {/* 2. Status Badge Usage */}
+                      <StatusBadge variant={item.status as any} className="text-[10px] px-1.5 py-0 h-5">
+                        {item.status.toUpperCase()}
+                      </StatusBadge>
+                    </div>
                     <p className="text-sm text-muted-foreground">
                       Oleh <span className="font-medium text-foreground">{item.user}</span>
                     </p>
-                    <p className="text-xs text-muted-foreground">{item.time}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{item.time}</p>
                   </div>
                 </div>
               ))}
