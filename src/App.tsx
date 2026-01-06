@@ -13,9 +13,17 @@ import { AuthGuard } from "./components/auth/AuthGuard";
 import { useAuthStore } from "./stores/auth-store";
 import { EmptyState } from "@/components/common/EmptyState";
 import { Church, Users, Wallet, Calendar, Image } from "lucide-react";
+
+// Existing Pages
 import BannerTopPage from "./pages/cms/banner/BannerTopPage";
 import BannerMiddlePage from "./pages/cms/banner/BannerMiddlePage";
 import BannerBottomPage from "./pages/cms/banner/BannerBottomPage";
+
+// New Pages
+import BeritaKomselPage from "./pages/cms/konten/BeritaKomselPage";
+import KebaktianMingguPage from "./pages/cms/ibadah/KebaktianMingguPage";
+import BuletinPage from "./pages/cms/konten/BuletinPage";
+import TokoJemaatPage from "./pages/cms/toko/TokoJemaatPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -74,6 +82,10 @@ const App = () => (
                 {/* Pelayanan & Ibadah */}
                 <Route path="/event/kalender" element={<ModulePlaceholder title="Kalender Event" icon={Calendar} />} />
                 <Route path="/ibadah" element={<ModulePlaceholder title="Jadwal Ibadah" icon={Church} />} />
+                
+                {/* NEW: Kebaktian Minggu */}
+                <Route path="/ibadah/kebaktian" element={<KebaktianMingguPage />} />
+                
                 <Route path="/ibadah/kehadiran" element={<ModulePlaceholder title="Absensi" icon={Users} />} />
                 <Route path="/pelayanan/anggota" element={<ModulePlaceholder title="Anggota Tim" icon={Users} />} />
 
@@ -83,11 +95,19 @@ const App = () => (
                 <Route path="/banner/bottom" element={<BannerBottomPage />} />
 
                 <Route path="/konten/artikel" element={<ModulePlaceholder title="Artikel" />} />
+                
+                {/* NEW: Berita Komsel & Buletin */}
+                <Route path="/konten/komsel" element={<BeritaKomselPage />} />
+                <Route path="/konten/buletin" element={<BuletinPage />} />
+                
                 <Route path="/konten/media" element={<ModulePlaceholder title="Media" />} />
                 
                 {/* Alkitab & Doa */}
                 <Route path="/alkitab" element={<ModulePlaceholder title="Alkitab Digital" />} />
                 <Route path="/doa" element={<ModulePlaceholder title="Pokok Doa" />} />
+
+                {/* NEW: Toko Jemaat */}
+                <Route path="/toko" element={<TokoJemaatPage />} />
 
                 {/* Keuangan - Restricted */}
                 <Route element={<AuthGuard allowedRoles={['ADMIN', 'BENDAHARA']} />}>

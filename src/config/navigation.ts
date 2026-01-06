@@ -7,12 +7,13 @@ import {
   FileText, 
   BookOpen,
   Heart,
-  Music,
-  MonitorPlay,
-  Database,
+  Image,
+  Video,
+  Newspaper,
+  ShoppingBag,
   LucideIcon,
   Church,
-  Image
+  Database
 } from "lucide-react";
 import { UserRole } from "@/types";
 
@@ -81,6 +82,7 @@ export const SIDEBAR_GROUPS: NavGroup[] = [
         items: [
           { title: "Kalender Event", href: "/event/kalender", roles: [] },
           { title: "Jadwal Ibadah", href: "/ibadah", roles: [] },
+          { title: "Kebaktian Minggu", href: "/ibadah/kebaktian", roles: ['ADMIN', 'SEKRETARIS'] }, // NEW
           { title: "Absensi Kehadiran", href: "/ibadah/kehadiran", roles: ['ADMIN', 'SEKRETARIS'] },
         ]
       },
@@ -114,6 +116,8 @@ export const SIDEBAR_GROUPS: NavGroup[] = [
         roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
         items: [
           { title: "Artikel & Renungan", href: "/konten/artikel", roles: [] },
+          { title: "Berita Komsel", href: "/konten/komsel", roles: [] }, // NEW
+          { title: "Buletin GKJ", href: "/konten/buletin", roles: [] }, // NEW
           { title: "Media & Galeri", href: "/konten/media", roles: [] },
         ]
       },
@@ -125,6 +129,17 @@ export const SIDEBAR_GROUPS: NavGroup[] = [
           { title: "Alkitab Digital", href: "/alkitab", roles: [] },
           { title: "Pokok Doa", href: "/doa", roles: [] },
         ]
+      }
+    ]
+  },
+  {
+    groupLabel: "Ekosistem", // NEW GROUP
+    items: [
+      {
+        title: "Toko Jemaat",
+        href: "/toko",
+        icon: ShoppingBag,
+        roles: ['ADMIN', 'SEKRETARIS', 'BENDAHARA', 'JEMAAT'] // Jemaat bisa akses (read only nanti di logic page)
       }
     ]
   },
