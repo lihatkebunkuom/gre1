@@ -11,7 +11,8 @@ import {
   MonitorPlay,
   Database,
   LucideIcon,
-  Church
+  Church,
+  Image
 } from "lucide-react";
 import { UserRole } from "@/types";
 
@@ -97,6 +98,16 @@ export const SIDEBAR_GROUPS: NavGroup[] = [
   {
     groupLabel: "Konten & Media",
     items: [
+      {
+        title: "Manajemen Banner",
+        icon: Image,
+        roles: ['ADMIN', 'SEKRETARIS'],
+        items: [
+          { title: "Banner Top / Artikel", href: "/banner/top", roles: [] },
+          { title: "Banner Middle", href: "/banner/middle", roles: [] },
+          { title: "Banner Bottom", href: "/banner/bottom", roles: [] },
+        ]
+      },
       {
         title: "Konten Rohani",
         icon: BookOpen,

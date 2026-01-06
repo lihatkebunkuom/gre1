@@ -12,7 +12,7 @@ import NotFound from "./pages/NotFound";
 import { AuthGuard } from "./components/auth/AuthGuard";
 import { useAuthStore } from "./stores/auth-store";
 import { EmptyState } from "@/components/common/EmptyState";
-import { Church, Users, Wallet, Calendar } from "lucide-react";
+import { Church, Users, Wallet, Calendar, Image } from "lucide-react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -74,7 +74,11 @@ const App = () => (
                 <Route path="/ibadah/kehadiran" element={<ModulePlaceholder title="Absensi" icon={Users} />} />
                 <Route path="/pelayanan/anggota" element={<ModulePlaceholder title="Anggota Tim" icon={Users} />} />
 
-                {/* Konten */}
+                {/* Konten & Media */}
+                <Route path="/banner/top" element={<ModulePlaceholder title="Banner Top" icon={Image} />} />
+                <Route path="/banner/middle" element={<ModulePlaceholder title="Banner Middle" icon={Image} />} />
+                <Route path="/banner/bottom" element={<ModulePlaceholder title="Banner Bottom" icon={Image} />} />
+
                 <Route path="/konten/artikel" element={<ModulePlaceholder title="Artikel" />} />
                 <Route path="/konten/media" element={<ModulePlaceholder title="Media" />} />
                 
