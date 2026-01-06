@@ -1,67 +1,133 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import {
-  LayoutDashboard,
-  Users,
-  Calendar,
-  Wallet,
-  Settings,
-  FileText,
-  LogOut,
-  Church
-} from "lucide-react";
+import { SIDEBAR_ITEMS } from "@/config/navigation";
+import { Church, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useAuthStore } from "@/stores/auth-store";
 
-const sidebarItems = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/" },
-  { icon: Users, label: "Data Jemaat", href: "/jemaat" },
-  { icon: Calendar, label: "Jadwal Ibadah", href: "/jadwal" },
-  { icon: Wallet, label: "Keuangan", href: "/keuangan" },
-  { icon: FileText, label: "Laporan", href: "/laporan" },
-  { icon: Settings, label: "Pengaturan", href: "/pengaturan" },
-];
+interface SidebarProps {
+  collapsed: boolean;
+  setCollapsed: (v: boolean) => void;
+  className?: string;
+}
 
-export const Sidebar = () => {
+export const Sidebar = ({ collapsed, setCollapsed, className }: SidebarProps) => {
   const location = useLocation();
+  // Simulasi user role (seharusnya dari store)
+  // const user = useAuthStore((state) => state.user);
+  const userRole = 'ADMIN'; // Default sementara untuk dev
+
+  const filteredItems = SIDEBAR_ITEMS.filter(
+    (item) => item.roles.length === 0 || item.roles.includes(userRole as any)
+  );
 
   return (
-    <aside className="hidden md:flex h-screen w-64 flex-col fixed left-0 top-0 border-r bg-sidebar text-sidebar-foreground">
-      <div className="p-6 border-b border-sidebar-border flex items-center gap-2">
-        <div className="bg-primary p-2 rounded-lg">
-          <Church className="h-6 w-6 text-primary-foreground" />
+    <aside 
+      className={cn(
+        "flex flex-col fixed left-0 top-0 h-screen bg-card border-r transition-all duration-300 ease-in-out z-20",
+        collapsed ? "w-16" : "w-64",
+        className
+      )}
+    >
+      {/* Header Sidebar */}
+      <div className={cn(
+        "h-16 flex items-center border-b border-border px-4",
+        collapsed ? "justify-center" : "justify-between"
+      )}>
+        <div className="flex items-center gap-2 overflow-hidden">
+          <div className="bg-primary p-2 rounded-lg shrink-0">
+            <Church className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <div className={cn(
+            "transition-all duration-300 whitespace-nowrap",
+            collapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+          )}>
+            <h1 className="font-bold text-sm tracking-tight">Gereja Digital</h1>
+          </div>
         </div>
-        <div>
-          <h1 className="font-bold text-lg tracking-tight">Gereja Digital</h1>
-          <p className="text-xs text-muted-foreground">Admin CMS</p>
-        </div>
+        
+        {!collapsed && (
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8" 
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {sidebarItems.map((item) => {
+      {/* Navigation Items */}
+      <nav className="flex-1 p-2 space-y-1 overflow-y-auto overflow-x-hidden">
+        {filteredItems.map((item) => {
           const isActive = location.pathname === item.href;
+          
+          if (collapsed) {
+            return (
+              <Tooltip key={item.href} delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Link
+                    to={item.href}
+                    className={cn(
+                      "flex items-center justify-center w-full h-10 rounded-md transition-colors",
+                      isActive
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    <item.icon className="h-5 w-5" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="font-medium">
+                  {item.title}
+                </TooltipContent>
+              </Tooltip>
+            );
+          }
+
           return (
             <Link
               key={item.href}
               to={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors",
+                "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200",
                 isActive
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                  ? "bg-primary/10 text-primary hover:bg-primary/15"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
-              <item.icon className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")} />
-              {item.label}
+              <item.icon className="h-4 w-4" />
+              <span>{item.title}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="p-4 border-t border-sidebar-border">
-        <button className="flex items-center gap-3 px-3 py-2.5 w-full rounded-md text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
-          <LogOut className="h-4 w-4" />
-          Keluar
-        </button>
-      </div>
+      {/* Collapse Trigger (Mobile/Tablet helper) */}
+      {collapsed && (
+        <div className="p-2 border-t">
+           <Button 
+            variant="ghost" 
+            size="icon" 
+            className="w-full" 
+            onClick={() => setCollapsed(false)}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
+      {/* Footer Sidebar (Logout) */}
+      {!collapsed && (
+        <div className="p-4 border-t border-border">
+          <Button variant="outline" className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20">
+            <LogOut className="h-4 w-4" />
+            Keluar
+          </Button>
+        </div>
+      )}
     </aside>
   );
 };
