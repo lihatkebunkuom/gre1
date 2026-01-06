@@ -31,10 +31,12 @@ import KalenderEventPage from "./pages/cms/ibadah/KalenderEventPage";
 import JadwalIbadahPage from "./pages/cms/ibadah/JadwalIbadahPage";
 import KebaktianMingguPage from "./pages/cms/ibadah/KebaktianMingguPage";
 import AbsensiKehadiranPage from "./pages/cms/ibadah/AbsensiKehadiranPage";
-
-// NEW: Divisi Pelayanan Pages
 import DaftarDivisiPage from "./pages/cms/divisi/DaftarDivisiPage";
 import AnggotaTimPage from "./pages/cms/divisi/AnggotaTimPage";
+
+// NEW: Konten Rohani Pages
+import ArtikelRenunganPage from "./pages/cms/konten/ArtikelRenunganPage";
+import MediaGaleriPage from "./pages/cms/konten/MediaGaleriPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -100,18 +102,18 @@ const App = () => (
                 <Route path="/ibadah/kebaktian" element={<KebaktianMingguPage />} />
                 <Route path="/ibadah/kehadiran" element={<AbsensiKehadiranPage />} />
                 
-                {/* NEW: Divisi Pelayanan */}
+                {/* Divisi Pelayanan */}
                 <Route path="/pelayanan" element={<DaftarDivisiPage />} />
                 <Route path="/pelayanan/anggota" element={<AnggotaTimPage />} />
 
-                {/* Konten & Media */}
+                {/* Konten & Media - COMPLETED */}
                 <Route path="/banner/top" element={<BannerTopPage />} />
                 <Route path="/banner/middle" element={<BannerMiddlePage />} />
                 <Route path="/banner/bottom" element={<BannerBottomPage />} />
-                <Route path="/konten/artikel" element={<ModulePlaceholder title="Artikel" />} />
+                <Route path="/konten/artikel" element={<ArtikelRenunganPage />} />
+                <Route path="/konten/media" element={<MediaGaleriPage />} />
                 <Route path="/konten/komsel" element={<BeritaKomselPage />} />
                 <Route path="/konten/buletin" element={<BuletinPage />} />
-                <Route path="/konten/media" element={<ModulePlaceholder title="Media" />} />
                 
                 {/* Alkitab & Doa */}
                 <Route path="/alkitab" element={<ModulePlaceholder title="Alkitab Digital" />} />
