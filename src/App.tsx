@@ -22,9 +22,12 @@ import BeritaKomselPage from "./pages/cms/konten/BeritaKomselPage";
 import KebaktianMingguPage from "./pages/cms/ibadah/KebaktianMingguPage";
 import BuletinPage from "./pages/cms/konten/BuletinPage";
 import TokoJemaatPage from "./pages/cms/toko/TokoJemaatPage";
-
-// New Page
 import DataPendetaPage from "./pages/cms/pendeta/DataPendetaPage";
+
+// NEW: Data Jemaat Pages
+import JemaatListPage from "./pages/cms/jemaat/JemaatListPage";
+import JemaatFormPage from "./pages/cms/jemaat/JemaatFormPage";
+import JemaatWilayahPage from "./pages/cms/jemaat/JemaatWilayahPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -73,12 +76,13 @@ const App = () => (
               <Route element={<DashboardLayout />}>
                 <Route path="/" element={<DashboardOverview />} />
                 
-                {/* Manajemen Data */}
-                <Route path="/jemaat" element={<ModulePlaceholder title="Data Jemaat" icon={Users} />} />
-                <Route path="/jemaat/create" element={<ModulePlaceholder title="Tambah Jemaat" icon={Users} />} />
-                <Route path="/jemaat/wilayah" element={<ModulePlaceholder title="Wilayah" icon={Users} />} />
+                {/* Manajemen Data: JEMAAT COMPLETED */}
+                <Route path="/jemaat" element={<JemaatListPage />} />
+                <Route path="/jemaat/create" element={<JemaatFormPage />} />
+                <Route path="/jemaat/edit/:id" element={<JemaatFormPage />} />
+                <Route path="/jemaat/wilayah" element={<JemaatWilayahPage />} />
                 
-                {/* NEW: Data Pendeta */}
+                {/* Data Pendeta */}
                 <Route path="/pendeta" element={<DataPendetaPage />} />
                 
                 <Route path="/pelayan" element={<ModulePlaceholder title="Pelayan" icon={Users} />} />
