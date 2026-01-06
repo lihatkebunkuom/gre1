@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
+import { ConfirmDialog } from "../common/ConfirmDialog";
 
 interface SidebarProps {
   className?: string;
@@ -13,17 +14,19 @@ interface SidebarProps {
 
 export const Sidebar = ({ className }: SidebarProps) => {
   const location = useLocation();
-  // Mengambil state dari Store Global
   const { sidebarCollapsed, toggleSidebar, setSidebarCollapsed } = useUIStore();
+  const { user, logout } = useAuthStore();
   
-  // Simulasi user role (dari Auth Store)
-  const user = useAuthStore((state) => state.user);
-  // Fallback sementara jika user null (saat development)
-  const userRole = user?.role || 'ADMIN'; 
+  const userRole = user?.role || 'JEMAAT'; 
 
   const filteredItems = SIDEBAR_ITEMS.filter(
     (item) => item.roles.length === 0 || item.roles.includes(userRole as any)
   );
+
+  const handleLogout = () => {
+    logout();
+    window.location.href = '/login';
+  };
 
   return (
     <aside 
@@ -33,7 +36,6 @@ export const Sidebar = ({ className }: SidebarProps) => {
         className
       )}
     >
-      {/* Header Sidebar */}
       <div className={cn(
         "h-16 flex items-center border-b border-border px-4",
         sidebarCollapsed ? "justify-center" : "justify-between"
@@ -62,7 +64,6 @@ export const Sidebar = ({ className }: SidebarProps) => {
         )}
       </div>
 
-      {/* Navigation Items */}
       <nav className="flex-1 p-2 space-y-1 overflow-y-auto overflow-x-hidden">
         {filteredItems.map((item) => {
           const isActive = location.pathname === item.href;
@@ -108,7 +109,6 @@ export const Sidebar = ({ className }: SidebarProps) => {
         })}
       </nav>
 
-      {/* Collapse Trigger (Mobile/Tablet helper) */}
       {sidebarCollapsed && (
         <div className="p-2 border-t">
            <Button 
@@ -122,13 +122,21 @@ export const Sidebar = ({ className }: SidebarProps) => {
         </div>
       )}
 
-      {/* Footer Sidebar (Logout) */}
       {!sidebarCollapsed && (
         <div className="p-4 border-t border-border">
-          <Button variant="outline" className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20">
-            <LogOut className="h-4 w-4" />
-            Keluar
-          </Button>
+          <ConfirmDialog
+            trigger={
+              <Button variant="outline" className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20">
+                <LogOut className="h-4 w-4" />
+                Keluar
+              </Button>
+            }
+            title="Konfirmasi Keluar"
+            description="Apakah Anda yakin ingin keluar dari sistem?"
+            confirmLabel="Ya, Keluar"
+            variant="destructive"
+            onConfirm={handleLogout}
+          />
         </div>
       )}
     </aside>
