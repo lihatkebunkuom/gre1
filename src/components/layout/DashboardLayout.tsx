@@ -1,14 +1,17 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { PageBreadcrumb } from "../common/PageBreadcrumb";
-import { useIsMobile } from "@/hooks/use-mobile"; // Kita asumsikan hook ini ada atau kita buat
+import { useIsMobile } from "@/hooks/use-mobile"; 
+import { useUIStore } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
+import { FullPageLoader } from "../common/LoadingSpinner";
 
 const DashboardLayout = () => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // Menggunakan Global Store
+  const { sidebarCollapsed, setSidebarCollapsed, isLoading } = useUIStore();
   const isMobile = useIsMobile();
 
   // Auto collapse on mobile
@@ -16,19 +19,16 @@ const DashboardLayout = () => {
     if (isMobile) {
       setSidebarCollapsed(true);
     }
-  }, [isMobile]);
+  }, [isMobile, setSidebarCollapsed]);
 
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col md:flex-row">
-      {/* Sidebar Area */}
-      <Sidebar 
-        collapsed={sidebarCollapsed} 
-        setCollapsed={setSidebarCollapsed}
-        className="hidden md:flex" 
-      />
+    <div className="min-h-screen bg-muted/20 flex flex-col md:flex-row transition-colors duration-300">
+      {/* Global Loader Overlay */}
+      {isLoading && <FullPageLoader />}
 
-      {/* Mobile Overlay (Optional for future implementation) */}
-      
+      {/* Sidebar Area - Controlled by Store */}
+      <Sidebar className="hidden md:flex" />
+
       {/* Main Content Area */}
       <div 
         className={cn(
