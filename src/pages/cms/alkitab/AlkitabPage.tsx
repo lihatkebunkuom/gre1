@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Edit, Plus, Trash2, Book, Mic } from "lucide-react";
+import { Edit, Plus, Trash2, Book, Mic, Keyboard } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/common/PageHeader";
@@ -29,8 +29,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // --- Schema ---
 const formSchema = z.object({
-  versi_alkitab: z.string().min(1, "Versi wajib dipilih"),
-  kitab: z.string().min(1, "Kitab wajib dipilih"),
+  versi_alkitab: z.string().min(1, "Versi wajib diisi"),
+  kitab: z.string().min(1, "Kitab wajib diisi"),
   pasal: z.coerce.number().min(1),
   ayat: z.coerce.number().min(1),
   teks_ayat: z.string().min(5, "Teks ayat wajib diisi"),
@@ -90,6 +90,10 @@ const AlkitabPage = () => {
   const [data, setData] = useState<AyatAlkitab[]>(MOCK_DATA);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  
+  // State untuk toggle input manual
+  const [manualVersi, setManualVersi] = useState(false);
+  const [manualKitab, setManualKitab] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -102,6 +106,8 @@ const AlkitabPage = () => {
 
   const handleAddNew = () => {
     setEditingId(null);
+    setManualVersi(false);
+    setManualKitab(false);
     form.reset({
       versi_alkitab: "TB", kitab: "", pasal: 1, ayat: 1, teks_ayat: "", bahasa: "id-ID",
       kategori_ayat: "", kata_kunci: "", tts_status: true, tts_bahasa: "id-ID", tts_kecepatan_baca: "1",
@@ -112,6 +118,17 @@ const AlkitabPage = () => {
 
   const handleEdit = (item: AyatAlkitab) => {
     setEditingId(item.id);
+    
+    // Cek apakah kitab ada di list standar
+    const allKitab = [...KITAB_PL, ...KITAB_PB];
+    const isStandardKitab = allKitab.includes(item.kitab);
+    setManualKitab(!isStandardKitab);
+
+    // Cek apakah versi ada di list standar
+    const standardVersiCodes = VERSI_OPTIONS.map(v => v.split(" ")[0]);
+    const isStandardVersi = standardVersiCodes.includes(item.versi_alkitab);
+    setManualVersi(!isStandardVersi);
+
     form.reset({ ...item });
     setIsDialogOpen(true);
   };
@@ -210,28 +227,82 @@ const AlkitabPage = () => {
                 
                 <TabsContent value="konten" className="space-y-4 pt-4">
                   <div className="grid grid-cols-2 gap-4">
+                    {/* VERSI ALKITAB */}
                     <FormField control={form.control} name="versi_alkitab" render={({ field }) => (
-                      <FormItem><FormLabel>Versi</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Pilih Versi" /></SelectTrigger></FormControl><SelectContent>{VERSI_OPTIONS.map(opt => <SelectItem key={opt} value={opt.split(" ")[0]}>{opt}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                      <FormItem>
+                        <div className="flex justify-between items-center">
+                          <FormLabel>Versi</FormLabel>
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-auto p-0 text-xs text-muted-foreground hover:text-primary"
+                            onClick={() => {
+                              setManualVersi(!manualVersi);
+                              field.onChange(""); // Reset nilai saat switch
+                            }}
+                          >
+                            {manualVersi ? "Pilih dari List" : "Input Manual"}
+                          </Button>
+                        </div>
+                        {manualVersi ? (
+                          <FormControl>
+                            <Input placeholder="Ketik nama versi (mis: KJV)..." {...field} />
+                          </FormControl>
+                        ) : (
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl><SelectTrigger><SelectValue placeholder="Pilih Versi" /></SelectTrigger></FormControl>
+                            <SelectContent>
+                              {VERSI_OPTIONS.map(opt => <SelectItem key={opt} value={opt.split(" ")[0]}>{opt}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        )}
+                        <FormMessage />
+                      </FormItem>
                     )} />
+
+                    {/* NAMA KITAB */}
                     <FormField control={form.control} name="kitab" render={({ field }) => (
-                      <FormItem><FormLabel>Kitab</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl><SelectTrigger><SelectValue placeholder="Pilih Kitab" /></SelectTrigger></FormControl>
-                          <SelectContent className="max-h-[300px]">
-                            <SelectGroup>
-                              <SelectLabel>Perjanjian Lama</SelectLabel>
-                              {KITAB_PL.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
-                            </SelectGroup>
-                            <SelectGroup>
-                              <SelectLabel>Perjanjian Baru</SelectLabel>
-                              {KITAB_PB.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
+                      <FormItem>
+                        <div className="flex justify-between items-center">
+                          <FormLabel>Kitab</FormLabel>
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-auto p-0 text-xs text-muted-foreground hover:text-primary"
+                            onClick={() => {
+                              setManualKitab(!manualKitab);
+                              field.onChange(""); // Reset nilai saat switch
+                            }}
+                          >
+                            {manualKitab ? "Pilih dari List" : "Input Manual"}
+                          </Button>
+                        </div>
+                        {manualKitab ? (
+                          <FormControl>
+                            <Input placeholder="Ketik nama kitab..." {...field} />
+                          </FormControl>
+                        ) : (
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl><SelectTrigger><SelectValue placeholder="Pilih Kitab" /></SelectTrigger></FormControl>
+                            <SelectContent className="max-h-[300px]">
+                              <SelectGroup>
+                                <SelectLabel>Perjanjian Lama</SelectLabel>
+                                {KITAB_PL.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                              </SelectGroup>
+                              <SelectGroup>
+                                <SelectLabel>Perjanjian Baru</SelectLabel>
+                                {KITAB_PB.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )} />
                   </div>
+
                   <div className="grid grid-cols-2 gap-4">
                     <FormField control={form.control} name="pasal" render={({ field }) => (
                       <FormItem><FormLabel>Pasal</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
