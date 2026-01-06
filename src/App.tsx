@@ -27,12 +27,14 @@ import JemaatFormPage from "./pages/cms/jemaat/JemaatFormPage";
 import JemaatWilayahPage from "./pages/cms/jemaat/JemaatWilayahPage";
 import DaftarPelayananPage from "./pages/cms/pelayanan/DaftarPelayananPage";
 import PenugasanPage from "./pages/cms/pelayanan/PenugasanPage";
-
-// NEW: Jadwal Ibadah Pages
 import KalenderEventPage from "./pages/cms/ibadah/KalenderEventPage";
 import JadwalIbadahPage from "./pages/cms/ibadah/JadwalIbadahPage";
 import KebaktianMingguPage from "./pages/cms/ibadah/KebaktianMingguPage";
 import AbsensiKehadiranPage from "./pages/cms/ibadah/AbsensiKehadiranPage";
+
+// NEW: Divisi Pelayanan Pages
+import DaftarDivisiPage from "./pages/cms/divisi/DaftarDivisiPage";
+import AnggotaTimPage from "./pages/cms/divisi/AnggotaTimPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -92,12 +94,15 @@ const App = () => (
                 <Route path="/pelayan" element={<DaftarPelayananPage />} />
                 <Route path="/pelayan/penugasan" element={<PenugasanPage />} />
 
-                {/* Pelayanan & Ibadah - COMPLETED */}
+                {/* Pelayanan & Ibadah */}
                 <Route path="/event/kalender" element={<KalenderEventPage />} />
                 <Route path="/ibadah" element={<JadwalIbadahPage />} />
                 <Route path="/ibadah/kebaktian" element={<KebaktianMingguPage />} />
                 <Route path="/ibadah/kehadiran" element={<AbsensiKehadiranPage />} />
-                <Route path="/pelayanan/anggota" element={<ModulePlaceholder title="Anggota Tim" icon={Users} />} />
+                
+                {/* NEW: Divisi Pelayanan */}
+                <Route path="/pelayanan" element={<DaftarDivisiPage />} />
+                <Route path="/pelayanan/anggota" element={<AnggotaTimPage />} />
 
                 {/* Konten & Media */}
                 <Route path="/banner/top" element={<BannerTopPage />} />
