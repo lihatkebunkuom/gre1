@@ -14,6 +14,7 @@ import { useAuthStore } from "./stores/auth-store";
 import { EmptyState } from "@/components/common/EmptyState";
 import { Church, Users, Wallet, Calendar, Image } from "lucide-react";
 import BannerTopPage from "./pages/cms/banner/BannerTopPage";
+import BannerMiddlePage from "./pages/cms/banner/BannerMiddlePage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -77,7 +78,7 @@ const App = () => (
 
                 {/* Konten & Media */}
                 <Route path="/banner/top" element={<BannerTopPage />} />
-                <Route path="/banner/middle" element={<ModulePlaceholder title="Banner Middle" icon={Image} />} />
+                <Route path="/banner/middle" element={<BannerMiddlePage />} />
                 <Route path="/banner/bottom" element={<ModulePlaceholder title="Banner Bottom" icon={Image} />} />
 
                 <Route path="/konten/artikel" element={<ModulePlaceholder title="Artikel" />} />
