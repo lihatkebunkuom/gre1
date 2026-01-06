@@ -20,7 +20,7 @@ import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription
 } from "@/components/ui/form";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel
 } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +41,7 @@ const formSchema = z.object({
   // TTS Fields
   tts_status: z.boolean().default(true),
   tts_bahasa: z.string().default("id-ID"),
-  tts_kecepatan_baca: z.string().default("1"), // 0.5 - 2 mapped to string select
+  tts_kecepatan_baca: z.string().default("1"),
   
   // Meta
   status_tampil: z.string().default("AKTIF"),
@@ -67,7 +67,23 @@ const MOCK_DATA: AyatAlkitab[] = [
   },
 ];
 
-const KITAB_OPTIONS = ["Kejadian", "Keluaran", "Mazmur", "Amsal", "Matius", "Yohanes", "Roma", "Wahyu"];
+// DATA LENGKAP KITAB
+const KITAB_PL = [
+  "Kejadian", "Keluaran", "Imamat", "Bilangan", "Ulangan", "Yosua", "Hakim-hakim", "Rut", 
+  "1 Samuel", "2 Samuel", "1 Raja-raja", "2 Raja-raja", "1 Tawarikh", "2 Tawarikh", "Ezra", "Nehemia", "Ester",
+  "Ayub", "Mazmur", "Amsal", "Pengkhotbah", "Kidung Agung",
+  "Yesaya", "Yeremia", "Ratapan", "Yehezkiel", "Daniel",
+  "Hosea", "Yoel", "Amos", "Obaja", "Yunus", "Mikha", "Nahum", "Habakuk", "Zefanya", "Hagai", "Zakharia", "Maleakhi"
+];
+
+const KITAB_PB = [
+  "Matius", "Markus", "Lukas", "Yohanes", "Kisah Para Rasul",
+  "Roma", "1 Korintus", "2 Korintus", "Galatia", "Efesus", "Filipi", "Kolose", 
+  "1 Tesalonika", "2 Tesalonika", "1 Timotius", "2 Timotius", "Titus", "Filemon", "Ibrani", "Yakobus",
+  "1 Petrus", "2 Petrus", "1 Yohanes", "2 Yohanes", "3 Yohanes", "Yudas",
+  "Wahyu"
+];
+
 const VERSI_OPTIONS = ["TB (Terjemahan Baru)", "BIS (Bahasa Indonesia Sehari-hari)", "NIV (English)"];
 
 const AlkitabPage = () => {
@@ -198,7 +214,22 @@ const AlkitabPage = () => {
                       <FormItem><FormLabel>Versi</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Pilih Versi" /></SelectTrigger></FormControl><SelectContent>{VERSI_OPTIONS.map(opt => <SelectItem key={opt} value={opt.split(" ")[0]}>{opt}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="kitab" render={({ field }) => (
-                      <FormItem><FormLabel>Kitab</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Pilih Kitab" /></SelectTrigger></FormControl><SelectContent>{KITAB_OPTIONS.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Kitab</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl><SelectTrigger><SelectValue placeholder="Pilih Kitab" /></SelectTrigger></FormControl>
+                          <SelectContent className="max-h-[300px]">
+                            <SelectGroup>
+                              <SelectLabel>Perjanjian Lama</SelectLabel>
+                              {KITAB_PL.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                            </SelectGroup>
+                            <SelectGroup>
+                              <SelectLabel>Perjanjian Baru</SelectLabel>
+                              {KITAB_PB.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
                     )} />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
