@@ -61,7 +61,7 @@ export const SIDEBAR_GROUPS: NavGroup[] = [
       },
       {
         title: "Pelayan & SDM",
-        icon: UserRole === 'ADMIN' ? Database : Users, // Conditional icon logic handled in component usually, static here
+        icon: Database, 
         roles: ['ADMIN', 'SEKRETARIS'],
         items: [
           { title: "Daftar Pelayan", href: "/pelayan", roles: [] },
@@ -146,7 +146,6 @@ export const SIDEBAR_GROUPS: NavGroup[] = [
   }
 ];
 
-// Flat list helper for breadcrumbs if needed
 export const getAllNavItems = () => {
   const all: { title: string, href: string }[] = [];
   SIDEBAR_GROUPS.forEach(group => {
