@@ -13,6 +13,7 @@ import { AuthGuard } from "./components/auth/AuthGuard";
 import { useAuthStore } from "./stores/auth-store";
 import { EmptyState } from "@/components/common/EmptyState";
 import { Church, Users, Wallet, Calendar, Image } from "lucide-react";
+import BannerTopPage from "./pages/cms/banner/BannerTopPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -75,7 +76,7 @@ const App = () => (
                 <Route path="/pelayanan/anggota" element={<ModulePlaceholder title="Anggota Tim" icon={Users} />} />
 
                 {/* Konten & Media */}
-                <Route path="/banner/top" element={<ModulePlaceholder title="Banner Top" icon={Image} />} />
+                <Route path="/banner/top" element={<BannerTopPage />} />
                 <Route path="/banner/middle" element={<ModulePlaceholder title="Banner Middle" icon={Image} />} />
                 <Route path="/banner/bottom" element={<ModulePlaceholder title="Banner Bottom" icon={Image} />} />
 
