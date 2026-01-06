@@ -27,7 +27,7 @@ export const useUIStore = create<UIState>()(
       setSidebarCollapsed: (value) => set({ sidebarCollapsed: value }),
 
       // Theme Implementation
-      theme: "system",
+      theme: "light", // Default Light Mode
       setTheme: (theme) => {
         set({ theme });
         // Logic perubahan class HTML akan ditangani oleh ThemeProvider
@@ -42,7 +42,7 @@ export const useUIStore = create<UIState>()(
       partialize: (state) => ({ 
         sidebarCollapsed: state.sidebarCollapsed,
         theme: state.theme 
-      }), // Hanya persist sidebar & theme, jangan loading status
+      }), // Hanya persist sidebar & theme
     }
   )
 );
