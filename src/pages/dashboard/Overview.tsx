@@ -1,179 +1,276 @@
+import React from 'react';
+import ReactECharts from 'echarts-for-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, CreditCard, CalendarCheck, TrendingUp, ArrowUpRight, Download, Plus } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Users, Coins, Calendar, TrendingUp, Bell, ArrowRight, Activity, UserPlus } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
-import { StatusBadge } from "@/components/common/StatusBadge";
-import { ConfirmDialog } from "@/components/common/ConfirmDialog";
-import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useUIStore } from '@/stores/ui-store';
 
-// Mock Data
+// --- Data Dummy & Config ---
+
 const stats = [
   {
     title: "Total Jemaat",
     value: "1,248",
     change: "+12% bulan ini",
     icon: Users,
-    trend: "up"
+    trend: "up",
+    color: "text-blue-500",
+    bg: "bg-blue-50 dark:bg-blue-900/20"
   },
   {
-    title: "Persembahan Minggu Ini",
-    value: "Rp 45.200.000",
-    change: "+5% dari minggu lalu",
-    icon: CreditCard,
-    trend: "up"
+    title: "Persembahan (Bulan Ini)",
+    value: "Rp 145.2 jt",
+    change: "+5% dari target",
+    icon: Coins,
+    trend: "up",
+    color: "text-green-500",
+    bg: "bg-green-50 dark:bg-green-900/20"
   },
   {
-    title: "Kehadiran Ibadah",
+    title: "Rata-rata Kehadiran",
     value: "892",
-    change: "Rata-rata kehadiran",
-    icon: CalendarCheck,
-    trend: "neutral"
+    change: "-2% minggu lalu",
+    icon: Activity,
+    trend: "down",
+    color: "text-orange-500",
+    bg: "bg-orange-50 dark:bg-orange-900/20"
+  },
+  {
+    title: "Jemaat Baru",
+    value: "24",
+    change: "Minggu ini",
+    icon: UserPlus,
+    trend: "neutral",
+    color: "text-purple-500",
+    bg: "bg-purple-50 dark:bg-purple-900/20"
   },
 ];
 
-const attendanceData = [
-  { name: 'Minggu 1', total: 750 },
-  { name: 'Minggu 2', total: 820 },
-  { name: 'Minggu 3', total: 780 },
-  { name: 'Minggu 4', total: 890 },
-  { name: 'Minggu 5', total: 950 },
+const upcomingServices = [
+  { name: "Ibadah Raya 1", time: "Minggu, 07:00", theme: "Hidup yang Berbuah", speaker: "Pdt. Andi Wijaya" },
+  { name: "Ibadah Raya 2", time: "Minggu, 10:00", theme: "Hidup yang Berbuah", speaker: "Pdt. Andi Wijaya" },
+  { name: "Ibadah Youth", time: "Sabtu, 18:00", theme: "Generation Z on Fire", speaker: "Ps. Budi Santoso" },
 ];
 
 const recentActivities = [
-  { action: "Pendaftaran Jemaat Baru", user: "Budi Santoso", time: "2 jam yang lalu", status: "success" },
-  { action: "Input Persembahan Minggu", user: "Bendahara", time: "5 jam yang lalu", status: "info" },
-  { action: "Update Jadwal Ibadah", user: "Sekretariat", time: "Kemarin", status: "warning" },
-  { action: "Export Laporan Bulanan", user: "Ketua Majelis", time: "2 hari lalu", status: "neutral" },
+  { user: "Sekretariat", action: "Menambahkan jadwal ibadah baru", time: "2 jam lalu" },
+  { user: "Bendahara", action: "Menginput laporan persembahan", time: "4 jam lalu" },
+  { user: "Sistem", action: "Backup database otomatis berhasil", time: "6 jam lalu" },
+  { user: "Admin", action: "Memperbarui data jemaat ID-293", time: "1 hari lalu" },
 ];
 
+// --- ECharts Configurations ---
+
+const getAttendanceOption = (isDark: boolean) => ({
+  tooltip: {
+    trigger: 'axis',
+    backgroundColor: isDark ? '#1f2937' : '#fff',
+    borderColor: isDark ? '#374151' : '#e5e7eb',
+    textStyle: { color: isDark ? '#f3f4f6' : '#1f2937' }
+  },
+  grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+  xAxis: {
+    type: 'category',
+    boundaryGap: false,
+    data: ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4', 'Minggu 5'],
+    axisLine: { lineStyle: { color: isDark ? '#6b7280' : '#9ca3af' } }
+  },
+  yAxis: {
+    type: 'value',
+    axisLine: { show: false },
+    splitLine: { lineStyle: { color: isDark ? '#374151' : '#e5e7eb', type: 'dashed' } },
+    axisLabel: { color: isDark ? '#6b7280' : '#9ca3af' }
+  },
+  series: [
+    {
+      name: 'Kehadiran',
+      type: 'line',
+      smooth: true,
+      lineStyle: { width: 3, color: '#3b82f6' },
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0, y: 0, x2: 0, y2: 1,
+          colorStops: [
+            { offset: 0, color: 'rgba(59, 130, 246, 0.5)' },
+            { offset: 1, color: 'rgba(59, 130, 246, 0.0)' }
+          ]
+        }
+      },
+      data: [820, 932, 901, 934, 1290]
+    }
+  ]
+});
+
+const getFinanceOption = (isDark: boolean) => ({
+  tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+  legend: { textStyle: { color: isDark ? '#9ca3af' : '#4b5563' }, bottom: 0 },
+  grid: { left: '3%', right: '4%', bottom: '10%', top: '10%', containLabel: true },
+  xAxis: {
+    type: 'category',
+    data: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+    axisLine: { lineStyle: { color: isDark ? '#6b7280' : '#9ca3af' } }
+  },
+  yAxis: {
+    type: 'value',
+    splitLine: { lineStyle: { color: isDark ? '#374151' : '#e5e7eb' } },
+    axisLabel: { formatter: '{value} Jt', color: isDark ? '#6b7280' : '#9ca3af' }
+  },
+  series: [
+    {
+      name: 'Pemasukan',
+      type: 'bar',
+      barGap: 0,
+      itemStyle: { color: '#10b981', borderRadius: [4, 4, 0, 0] },
+      data: [320, 332, 301, 334, 390, 330]
+    },
+    {
+      name: 'Pengeluaran',
+      type: 'bar',
+      itemStyle: { color: '#ef4444', borderRadius: [4, 4, 0, 0] },
+      data: [220, 182, 191, 234, 290, 310]
+    }
+  ]
+});
+
+// --- Main Component ---
+
 const DashboardOverview = () => {
-  const handleDownload = () => {
-    toast.success("Laporan sedang diunduh...");
-  };
+  const { theme } = useUIStore();
+  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   return (
-    <div className="space-y-8">
-      {/* 1. Page Header Component */}
+    <div className="space-y-8 animate-in fade-in duration-500">
       <PageHeader 
-        title="Dashboard Overview" 
-        description="Ringkasan aktivitas gereja dan statistik jemaat terkini."
+        title="Dashboard" 
+        description="Ringkasan performa dan aktivitas gereja minggu ini."
       >
-        <ConfirmDialog
-          trigger={<Button variant="outline"><Download className="mr-2 h-4 w-4"/> Unduh Laporan</Button>}
-          title="Unduh Laporan Bulanan?"
-          description="Laporan akan diunduh dalam format PDF. Proses ini mungkin memakan waktu beberapa detik."
-          confirmLabel="Unduh Sekarang"
-          onConfirm={handleDownload}
-        />
-        <Button>
-          <Plus className="mr-2 h-4 w-4"/> Tambah Jemaat
+        <Button variant="outline" className="gap-2">
+          <Bell className="h-4 w-4" /> Notifikasi
         </Button>
       </PageHeader>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {/* 1. Stats Cards Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, index) => (
-          <Card key={index} className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                {stat.trend === 'up' && <TrendingUp className="h-3 w-3 text-green-500" />}
-                {stat.change}
-              </p>
+          <Card key={index} className="border-l-4" style={{ borderLeftColor: stat.trend === 'up' ? '#10b981' : stat.trend === 'down' ? '#ef4444' : '#a855f7' }}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between space-y-0 pb-2">
+                <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+                <div className={`p-2 rounded-full ${stat.bg}`}>
+                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1 mt-2">
+                <span className="text-2xl font-bold">{stat.value}</span>
+                <span className={`text-xs ${stat.trend === 'up' ? 'text-green-600' : stat.trend === 'down' ? 'text-red-600' : 'text-muted-foreground'} flex items-center gap-1`}>
+                  {stat.trend === 'up' && <TrendingUp className="h-3 w-3" />}
+                  {stat.change}
+                </span>
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
+      {/* 2. Charts Section */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
+        
+        {/* Attendance Chart (Left - Wider) */}
+        <Card className="col-span-4 shadow-sm">
           <CardHeader>
             <CardTitle>Tren Kehadiran Ibadah</CardTitle>
-            <CardDescription>
-              Statistik kehadiran jemaat dalam 5 minggu terakhir.
-            </CardDescription>
+            <CardDescription>Grafik kehadiran jemaat dalam 5 minggu terakhir.</CardDescription>
           </CardHeader>
-          <CardContent className="pl-2">
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={attendanceData}>
-                  <defs>
-                    <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
-                  <XAxis 
-                    dataKey="name" 
-                    stroke="#888888" 
-                    fontSize={12} 
-                    tickLine={false} 
-                    axisLine={false}
-                  />
-                  <YAxis 
-                    stroke="#888888" 
-                    fontSize={12} 
-                    tickLine={false} 
-                    axisLine={false}
-                    tickFormatter={(value) => `${value}`}
-                  />
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="total" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={2}
-                    fillOpacity={1} 
-                    fill="url(#colorTotal)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
+          <CardContent>
+            <ReactECharts 
+              option={getAttendanceOption(isDark)} 
+              style={{ height: '350px', width: '100%' }} 
+              opts={{ renderer: 'svg' }}
+            />
           </CardContent>
         </Card>
 
-        <Card className="col-span-3">
+        {/* Finance Chart (Right) */}
+        <Card className="col-span-3 shadow-sm">
           <CardHeader>
-            <CardTitle>Aktivitas Terbaru</CardTitle>
-            <CardDescription>
-              Log aktivitas sistem terakhir.
-            </CardDescription>
+            <CardTitle>Keuangan Semester Ini</CardTitle>
+            <CardDescription>Perbandingan pemasukan vs pengeluaran.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              {recentActivities.map((item, i) => (
-                <div key={i} className="flex items-start gap-4 pb-4 border-b last:border-0 last:pb-0">
-                  <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                    <ArrowUpRight className="h-4 w-4 text-primary" />
+            <ReactECharts 
+              option={getFinanceOption(isDark)} 
+              style={{ height: '350px', width: '100%' }}
+              opts={{ renderer: 'svg' }}
+            />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 3. Bottom Section: Upcoming & Recent Activity */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        
+        {/* Jadwal Ibadah */}
+        <Card className="col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div className="space-y-1">
+              <CardTitle>Jadwal Ibadah Minggu Ini</CardTitle>
+              <CardDescription>Persiapan pelayanan minggu ini.</CardDescription>
+            </div>
+            <Button variant="ghost" size="sm" className="text-primary">Lihat Semua <ArrowRight className="ml-2 h-4 w-4"/></Button>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {upcomingServices.map((service, i) => (
+                <div key={i} className="flex flex-col gap-3 p-4 border rounded-lg bg-muted/20 hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-2 text-primary font-semibold">
+                    <Calendar className="h-4 w-4" />
+                    <span className="text-sm">{service.time}</span>
                   </div>
-                  <div className="space-y-1 flex-1">
-                    <div className="flex justify-between items-start">
-                      <p className="text-sm font-medium leading-none mb-1">{item.action}</p>
-                      {/* 2. Status Badge Usage */}
-                      <StatusBadge variant={item.status as any} className="text-[10px] px-1.5 py-0 h-5">
-                        {item.status.toUpperCase()}
-                      </StatusBadge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Oleh <span className="font-medium text-foreground">{item.user}</span>
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">{item.time}</p>
+                  <div>
+                    <h4 className="font-bold text-base">{service.name}</h4>
+                    <p className="text-xs text-muted-foreground mt-1">"{service.theme}"</p>
+                  </div>
+                  <div className="mt-auto pt-2 border-t text-xs text-muted-foreground flex items-center gap-2">
+                    <Avatar className="h-5 w-5">
+                      <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${service.speaker}`} />
+                      <AvatarFallback>SP</AvatarFallback>
+                    </Avatar>
+                    {service.speaker}
                   </div>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
+
+        {/* Notifikasi Ringkas */}
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle>Aktivitas Terbaru</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {recentActivities.map((act, i) => (
+                <div key={i} className="flex gap-4">
+                  <div className="relative">
+                    <span className="absolute left-[9px] top-8 h-full w-[2px] bg-muted last:hidden"></span>
+                    <div className="h-5 w-5 rounded-full border-2 border-primary bg-background z-10 relative" />
+                  </div>
+                  <div className="space-y-1 pb-1">
+                    <p className="text-sm font-medium leading-none">{act.action}</p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="font-semibold text-foreground">{act.user}</span> • {act.time}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
       </div>
     </div>
   );
