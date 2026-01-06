@@ -33,10 +33,12 @@ import KebaktianMingguPage from "./pages/cms/ibadah/KebaktianMingguPage";
 import AbsensiKehadiranPage from "./pages/cms/ibadah/AbsensiKehadiranPage";
 import DaftarDivisiPage from "./pages/cms/divisi/DaftarDivisiPage";
 import AnggotaTimPage from "./pages/cms/divisi/AnggotaTimPage";
-
-// NEW: Konten Rohani Pages
 import ArtikelRenunganPage from "./pages/cms/konten/ArtikelRenunganPage";
 import MediaGaleriPage from "./pages/cms/konten/MediaGaleriPage";
+
+// NEW: Alkitab & Doa Pages
+import AlkitabPage from "./pages/cms/alkitab/AlkitabPage";
+import PokokDoaPage from "./pages/cms/doa/PokokDoaPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -106,7 +108,7 @@ const App = () => (
                 <Route path="/pelayanan" element={<DaftarDivisiPage />} />
                 <Route path="/pelayanan/anggota" element={<AnggotaTimPage />} />
 
-                {/* Konten & Media - COMPLETED */}
+                {/* Konten & Media */}
                 <Route path="/banner/top" element={<BannerTopPage />} />
                 <Route path="/banner/middle" element={<BannerMiddlePage />} />
                 <Route path="/banner/bottom" element={<BannerBottomPage />} />
@@ -115,9 +117,9 @@ const App = () => (
                 <Route path="/konten/komsel" element={<BeritaKomselPage />} />
                 <Route path="/konten/buletin" element={<BuletinPage />} />
                 
-                {/* Alkitab & Doa */}
-                <Route path="/alkitab" element={<ModulePlaceholder title="Alkitab Digital" />} />
-                <Route path="/doa" element={<ModulePlaceholder title="Pokok Doa" />} />
+                {/* Alkitab & Doa - COMPLETED */}
+                <Route path="/alkitab" element={<AlkitabPage />} />
+                <Route path="/doa" element={<PokokDoaPage />} />
 
                 {/* Ekosistem */}
                 <Route path="/toko" element={<TokoJemaatPage />} />
