@@ -40,6 +40,11 @@ import MediaGaleriPage from "./pages/cms/konten/MediaGaleriPage";
 import AlkitabPage from "./pages/cms/alkitab/AlkitabPage";
 import PokokDoaPage from "./pages/cms/doa/PokokDoaPage";
 
+// NEW: Keuangan Pages
+import TransaksiPage from "./pages/cms/keuangan/TransaksiPage";
+import PersembahanPage from "./pages/cms/keuangan/PersembahanPage";
+import LaporanKeuanganPage from "./pages/cms/keuangan/LaporanKeuanganPage";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -117,7 +122,7 @@ const App = () => (
                 <Route path="/konten/komsel" element={<BeritaKomselPage />} />
                 <Route path="/konten/buletin" element={<BuletinPage />} />
                 
-                {/* Alkitab & Doa - COMPLETED */}
+                {/* Alkitab & Doa */}
                 <Route path="/alkitab" element={<AlkitabPage />} />
                 <Route path="/doa" element={<PokokDoaPage />} />
 
@@ -126,9 +131,9 @@ const App = () => (
 
                 {/* Keuangan - Restricted */}
                 <Route element={<AuthGuard allowedRoles={['ADMIN', 'BENDAHARA']} />}>
-                   <Route path="/keuangan/transaksi" element={<ModulePlaceholder title="Transaksi Keuangan" icon={Wallet} />} />
-                   <Route path="/keuangan/persembahan" element={<ModulePlaceholder title="Data Persembahan" icon={Wallet} />} />
-                   <Route path="/keuangan/laporan" element={<ModulePlaceholder title="Laporan Keuangan" icon={Wallet} />} />
+                   <Route path="/keuangan/transaksi" element={<TransaksiPage />} />
+                   <Route path="/keuangan/persembahan" element={<PersembahanPage />} />
+                   <Route path="/keuangan/laporan" element={<LaporanKeuanganPage />} />
                 </Route>
 
                 <Route path="/laporan" element={<ModulePlaceholder title="Laporan & Analitik" />} />
