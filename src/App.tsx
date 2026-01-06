@@ -19,17 +19,20 @@ import BannerTopPage from "./pages/cms/banner/BannerTopPage";
 import BannerMiddlePage from "./pages/cms/banner/BannerMiddlePage";
 import BannerBottomPage from "./pages/cms/banner/BannerBottomPage";
 import BeritaKomselPage from "./pages/cms/konten/BeritaKomselPage";
-import KebaktianMingguPage from "./pages/cms/ibadah/KebaktianMingguPage";
 import BuletinPage from "./pages/cms/konten/BuletinPage";
 import TokoJemaatPage from "./pages/cms/toko/TokoJemaatPage";
 import DataPendetaPage from "./pages/cms/pendeta/DataPendetaPage";
 import JemaatListPage from "./pages/cms/jemaat/JemaatListPage";
 import JemaatFormPage from "./pages/cms/jemaat/JemaatFormPage";
 import JemaatWilayahPage from "./pages/cms/jemaat/JemaatWilayahPage";
-
-// NEW: Pelayanan Pages
 import DaftarPelayananPage from "./pages/cms/pelayanan/DaftarPelayananPage";
 import PenugasanPage from "./pages/cms/pelayanan/PenugasanPage";
+
+// NEW: Jadwal Ibadah Pages
+import KalenderEventPage from "./pages/cms/ibadah/KalenderEventPage";
+import JadwalIbadahPage from "./pages/cms/ibadah/JadwalIbadahPage";
+import KebaktianMingguPage from "./pages/cms/ibadah/KebaktianMingguPage";
+import AbsensiKehadiranPage from "./pages/cms/ibadah/AbsensiKehadiranPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -85,15 +88,15 @@ const App = () => (
                 <Route path="/jemaat/wilayah" element={<JemaatWilayahPage />} />
                 <Route path="/pendeta" element={<DataPendetaPage />} />
                 
-                {/* NEW: Pelayanan & SDM */}
+                {/* Pelayanan & SDM */}
                 <Route path="/pelayan" element={<DaftarPelayananPage />} />
                 <Route path="/pelayan/penugasan" element={<PenugasanPage />} />
 
-                {/* Pelayanan & Ibadah */}
-                <Route path="/event/kalender" element={<ModulePlaceholder title="Kalender Event" icon={Calendar} />} />
-                <Route path="/ibadah" element={<ModulePlaceholder title="Jadwal Ibadah" icon={Church} />} />
+                {/* Pelayanan & Ibadah - COMPLETED */}
+                <Route path="/event/kalender" element={<KalenderEventPage />} />
+                <Route path="/ibadah" element={<JadwalIbadahPage />} />
                 <Route path="/ibadah/kebaktian" element={<KebaktianMingguPage />} />
-                <Route path="/ibadah/kehadiran" element={<ModulePlaceholder title="Absensi" icon={Users} />} />
+                <Route path="/ibadah/kehadiran" element={<AbsensiKehadiranPage />} />
                 <Route path="/pelayanan/anggota" element={<ModulePlaceholder title="Anggota Tim" icon={Users} />} />
 
                 {/* Konten & Media */}
