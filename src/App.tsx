@@ -11,6 +11,8 @@ import UnauthorizedPage from "./pages/auth/Unauthorized";
 import NotFound from "./pages/NotFound";
 import { AuthGuard } from "./components/auth/AuthGuard";
 import { useAuthStore } from "./stores/auth-store";
+import { EmptyState } from "@/components/common/EmptyState";
+import { Church, Users, Wallet, Calendar } from "lucide-react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,7 +23,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Wrapper untuk mencegah user yang sudah login masuk ke halaman login
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   if (isAuthenticated) {
@@ -29,6 +30,17 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   }
   return <>{children}</>;
 };
+
+// Generic Placeholder Component
+const ModulePlaceholder = ({ title, icon: Icon }: { title: string, icon?: any }) => (
+  <div className="p-4 animate-in fade-in duration-300">
+    <EmptyState 
+      title={`Modul ${title}`}
+      description="Modul ini sedang dalam pengembangan."
+      icon={Icon ? <Icon className="h-10 w-10 text-muted-foreground" /> : undefined}
+    />
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -38,7 +50,6 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* PUBLIC ROUTES */}
             <Route path="/login" element={
               <PublicRoute>
                 <LoginPage />
@@ -46,21 +57,40 @@ const App = () => (
             } />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-            {/* PROTECTED ROUTES (Semua User Login) */}
             <Route element={<AuthGuard />}>
               <Route element={<DashboardLayout />}>
                 <Route path="/" element={<DashboardOverview />} />
                 
-                <Route path="/jemaat" element={<div className="p-4">Halaman Data Jemaat</div>} />
-                <Route path="/jadwal" element={<div className="p-4">Halaman Jadwal Ibadah</div>} />
+                {/* Manajemen Data */}
+                <Route path="/jemaat" element={<ModulePlaceholder title="Data Jemaat" icon={Users} />} />
+                <Route path="/jemaat/create" element={<ModulePlaceholder title="Tambah Jemaat" icon={Users} />} />
+                <Route path="/jemaat/wilayah" element={<ModulePlaceholder title="Wilayah" icon={Users} />} />
+                <Route path="/pelayan" element={<ModulePlaceholder title="Pelayan" icon={Users} />} />
+                <Route path="/pelayan/penugasan" element={<ModulePlaceholder title="Penugasan Pelayan" icon={Users} />} />
+
+                {/* Pelayanan & Ibadah */}
+                <Route path="/event/kalender" element={<ModulePlaceholder title="Kalender Event" icon={Calendar} />} />
+                <Route path="/ibadah" element={<ModulePlaceholder title="Jadwal Ibadah" icon={Church} />} />
+                <Route path="/ibadah/kehadiran" element={<ModulePlaceholder title="Absensi" icon={Users} />} />
+                <Route path="/pelayanan/anggota" element={<ModulePlaceholder title="Anggota Tim" icon={Users} />} />
+
+                {/* Konten */}
+                <Route path="/konten/artikel" element={<ModulePlaceholder title="Artikel" />} />
+                <Route path="/konten/media" element={<ModulePlaceholder title="Media" />} />
                 
-                {/* ROLE SPECIFIC ROUTES (Contoh: Hanya Admin & Bendahara) */}
+                {/* Alkitab & Doa */}
+                <Route path="/alkitab" element={<ModulePlaceholder title="Alkitab Digital" />} />
+                <Route path="/doa" element={<ModulePlaceholder title="Pokok Doa" />} />
+
+                {/* Keuangan - Restricted */}
                 <Route element={<AuthGuard allowedRoles={['ADMIN', 'BENDAHARA']} />}>
-                   <Route path="/keuangan" element={<div className="p-4">Halaman Keuangan (Restricted)</div>} />
+                   <Route path="/keuangan/transaksi" element={<ModulePlaceholder title="Transaksi Keuangan" icon={Wallet} />} />
+                   <Route path="/keuangan/persembahan" element={<ModulePlaceholder title="Data Persembahan" icon={Wallet} />} />
+                   <Route path="/keuangan/laporan" element={<ModulePlaceholder title="Laporan Keuangan" icon={Wallet} />} />
                 </Route>
 
-                <Route path="/laporan" element={<div className="p-4">Halaman Laporan</div>} />
-                <Route path="/pengaturan" element={<div className="p-4">Halaman Pengaturan</div>} />
+                <Route path="/laporan" element={<ModulePlaceholder title="Laporan & Analitik" />} />
+                <Route path="/pengaturan" element={<ModulePlaceholder title="Pengaturan Sistem" />} />
               </Route>
             </Route>
             
