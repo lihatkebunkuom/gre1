@@ -1,7 +1,22 @@
-node_modules
-# Keep environment variables out of version control
+# Dependencies
+node_modules/
+
+# Production & Build
+dist/
+
+# Environment Variables
 .env
+.env.*
+!.env.example
 
-/generated/prisma
+# Logs
+*.log
 
-/generated/prisma
+# Testing
+coverage/
+
+# Prisma
+/prisma/migrations/migration_lock.toml
+
+# NestJS
+*.tsbuildinfo
