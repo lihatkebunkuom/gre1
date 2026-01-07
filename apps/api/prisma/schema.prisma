@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- ENUMS ---
+
+enum Role {
+  ADMIN
+  SEKRETARIS
+  BENDAHARA
+  GEMBALA
+  JEMAAT
+}
+
+enum JenisKelamin {
+  L
+  P
+}
+
+enum StatusKeanggotaan {
+  TETAP
+  TITIPAN
+  TAMU
+}
+
+enum StatusPernikahan {
+  BELUM_MENIKAH
+  MENIKAH
+  CERAI_HIDUP
+  CERAI_MATI
+}
+
+enum StatusSakramen {
+  SUDAH
+  BELUM
+}
+
+// --- MODELS ---
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(JEMAAT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Wilayah {
+  id          String    @id @default(uuid())
+  nama        String
+  keterangan  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  kelompoks   Kelompok[]
+  jemaats     Jemaat[]
+
+  @@map("wilayah")
+}
+
+model Kelompok {
+  id          String    @id @default(uuid())
+  nama        String
+  ketua       String?
+  jadwal      String?
+  catatan     String?
+  wilayahId   String?   @map("wilayah_id")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  wilayah     Wilayah?  @relation(fields: [wilayahId], references: [id])
+  jemaats     Jemaat[]
+
+  @@map("kelompok")
+}
+
+model Jemaat {
+  id                  String    @id @default(uuid())
+  
+  // A. Data Utama
+  nomorInduk          String    @unique @map("nomor_induk")
+  nama                String
+  jenisKelamin        JenisKelamin @map("jenis_kelamin")
+  tempatLahir         String?   @map("tempat_lahir")
+  tanggalLahir        DateTime  @map("tanggal_lahir")
+  statusAktif         Boolean   @default(true) @map("status_aktif")
+  statusKeanggotaan   StatusKeanggotaan @default(TETAP) @map("status_keanggotaan")
+  tanggalBergabung    DateTime  @default(now()) @map("tanggal_bergabung")
+  fotoUrl             String?   @map("foto_url")
+  catatanKhusus       String?   @map("catatan_khusus") @db.Text
+
+  // B. Kontak & Alamat
+  noHp                String?   @map("no_hp")
+  email               String?
+  alamat              String?   @db.Text
+  kota                String?
+  provinsi            String?
+
+  // C. Keluarga
+  statusPernikahan    StatusPernikahan @default(BELUM_MENIKAH) @map("status_pernikahan")
+  namaPasangan        String?   @map("nama_pasangan")
+  jumlahAnak          Int       @default(0) @map("jumlah_anak")
+  isKepalaKeluarga    Boolean   @default(false) @map("is_kepala_keluarga")
+  noKK                String?   @map("no_kk")
+
+  // D. Rohani
+  statusBaptis        StatusSakramen @default(BELUM) @map("status_baptis")
+  tanggalBaptis       DateTime?      @map("tanggal_baptis")
+  gerejaBaptis        String?        @map("gereja_baptis")
+  
+  statusSidi          StatusSakramen @default(BELUM) @map("status_sidi")
+  tanggalSidi         DateTime?      @map("tanggal_sidi")
+  pendetaSidi         String?        @map("pendeta_sidi")
+
+  // E. Pekerjaan & Pendidikan
+  pendidikan          String?
+  pekerjaan           String?
+  instansi            String?
+
+  // F. Pelayanan
+  minatPelayanan      String?   @map("minat_pelayanan")
+  pelayananDiikuti    String?   @map("pelayanan_diikuti")
+  peranDalamKelompok  String?   @default("Anggota") @map("peran_dalam_kelompok")
+  
+  // Relasi
+  wilayahId           String?   @map("wilayah_id")
+  kelompokId          String?   @map("kelompok_id")
+  
+  wilayah             Wilayah?  @relation(fields: [wilayahId], references: [id])
+  kelompok            Kelompok? @relation(fields: [kelompokId], references: [id])
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@map("jemaat")
+}
