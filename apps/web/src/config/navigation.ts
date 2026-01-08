@@ -14,7 +14,8 @@ import {
   LucideIcon,
   Church,
   Database,
-  UserCheck
+  UserCheck,
+  QrCode
 } from "lucide-react";
 import { UserRole } from "@/types";
 
@@ -68,6 +69,16 @@ export const SIDEBAR_GROUPS: NavGroup[] = [
         items: [
           { title: "Daftar Pendeta", href: "/pendeta", roles: [] },
           { title: "Tambah Pendeta", href: "/pendeta/create", roles: [] },
+        ]
+      },
+      {
+        title: "Kehadiran Jemaat",
+        icon: QrCode,
+        roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
+        items: [
+          { title: "Sesi QR Kehadiran", href: "/kehadiran/sesi", roles: [] },
+          { title: "Riwayat Kehadiran", href: "/kehadiran/riwayat", roles: [] },
+          { title: "Scan Kehadiran", href: "/kehadiran/scan", roles: [] },
         ]
       },
       {

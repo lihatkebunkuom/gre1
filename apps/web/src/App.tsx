@@ -38,6 +38,12 @@ import AnggotaTimPage from "./pages/cms/divisi/AnggotaTimPage";
 import ArtikelRenunganPage from "./pages/cms/konten/ArtikelRenunganPage";
 import MediaGaleriPage from "./pages/cms/konten/MediaGaleriPage";
 
+// Kehadiran Pages
+import QrSessionListPage from "./pages/cms/kehadiran/QrSessionListPage";
+import QrSessionFormPage from "./pages/cms/kehadiran/QrSessionFormPage";
+import KehadiranHistoryPage from "./pages/cms/kehadiran/KehadiranHistoryPage";
+import KehadiranScanPage from "./pages/cms/kehadiran/KehadiranScanPage";
+
 // NEW: Alkitab & Doa Pages
 import AlkitabPage from "./pages/cms/alkitab/AlkitabPage";
 import PokokDoaPage from "./pages/cms/doa/PokokDoaPage";
@@ -102,6 +108,13 @@ const App = () => (
                 <Route path="/pendeta" element={<DataPendetaPage />} />
                 <Route path="/pendeta/create" element={<PendetaFormPage />} />
                 <Route path="/pendeta/edit/:id" element={<PendetaFormPage />} />
+                
+                {/* Kehadiran */}
+                <Route path="/kehadiran/sesi" element={<QrSessionListPage />} />
+                <Route path="/kehadiran/sesi/create" element={<QrSessionFormPage />} />
+                <Route path="/kehadiran/sesi/edit/:id" element={<QrSessionFormPage />} />
+                <Route path="/kehadiran/riwayat" element={<KehadiranHistoryPage />} />
+                <Route path="/kehadiran/scan" element={<KehadiranScanPage />} />
                 
                 {/* Pelayanan & SDM */}
                 <Route path="/pelayan" element={<DaftarPelayananPage />} />

@@ -47,6 +47,11 @@ enum JabatanPendeta {
   EVANGELIS
 }
 
+enum MetodeKehadiran {
+  QR_CODE
+  MANUAL
+}
+
 // --- MODELS ---
 
 model User {
@@ -145,6 +150,8 @@ model Jemaat {
   wilayah             Wilayah?  @relation(fields: [wilayahId], references: [id])
   kelompok            Kelompok? @relation(fields: [kelompokId], references: [id])
 
+  kehadirans          Kehadiran[]
+
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
@@ -220,4 +227,37 @@ model Pelayanan {
   updatedAt                 DateTime @updatedAt @map("updated_at")
 
   @@map("pelayanan")
+}
+
+model QrSession {
+  id              String      @id @default(uuid())
+  kodeQr          String      @unique @map("kode_qr")
+  namaKegiatan    String      @map("nama_kegiatan")
+  jenisKegiatan   String      @map("jenis_kegiatan")
+  tanggalKegiatan DateTime    @map("tanggal_kegiatan") @db.Date
+  waktuMulai      DateTime    @map("waktu_mulai")
+  waktuSelesai    DateTime    @map("waktu_selesai")
+  statusAktif     Boolean     @default(true) @map("status_aktif")
+  createdBy       String?     @map("created_by")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  kehadirans      Kehadiran[]
+
+  @@map("qr_session")
+}
+
+model Kehadiran {
+  id           String          @id @default(uuid())
+  jemaatId     String          @map("jemaat_id")
+  qrSessionId  String          @map("qr_session_id")
+  waktuHadir   DateTime        @default(now()) @map("waktu_hadir")
+  metode       MetodeKehadiran @default(QR_CODE)
+  createdAt    DateTime        @default(now()) @map("created_at")
+
+  jemaat       Jemaat          @relation(fields: [jemaatId], references: [id])
+  qrSession    QrSession       @relation(fields: [qrSessionId], references: [id])
+
+  @@unique([jemaatId, qrSessionId])
+  @@map("kehadiran")
 }
