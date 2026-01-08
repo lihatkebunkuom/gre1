@@ -39,6 +39,14 @@ enum StatusSakramen {
   BELUM
 }
 
+enum JabatanPendeta {
+  GEMBALA_SIDANG
+  WAKIL_GEMBALA
+  PENDETA_MUDA
+  PENATUA
+  EVANGELIS
+}
+
 // --- MODELS ---
 
 model User {
@@ -141,4 +149,75 @@ model Jemaat {
   updatedAt           DateTime  @updatedAt
 
   @@map("jemaat")
+}
+
+model Pendeta {
+  id                  String    @id @default(uuid())
+  
+  // A. Informasi Utama
+  namaLengkap         String    @map("nama_lengkap")
+  gelar               String?
+  jenisKelamin        JenisKelamin @map("jenis_kelamin")
+  tempatLahir         String?   @map("tempat_lahir")
+  tanggalLahir        DateTime  @map("tanggal_lahir")
+  statusAktif         Boolean   @default(true) @map("status_aktif")
+  fotoPendeta         String?   @map("foto_pendeta")
+
+  // B. Kontak
+  noHandphone         String    @map("no_handphone")
+  email               String?
+  alamat              String?   @db.Text
+  kota                String?
+  provinsi            String?
+
+  // C. Data Kepelayanan
+  jabatanPelayanan    JabatanPendeta @map("jabatan_pelayanan")
+  tanggalPenahbisan   DateTime?      @map("tanggal_penahbisan")
+  wilayahPelayanan    String?        @map("wilayah_pelayanan")
+  bidangPelayanan     String?        @map("bidang_pelayanan")
+  jadwalPelayanan     String?        @map("jadwal_pelayanan")
+  nomorIndukPendeta   String?        @map("nomor_induk_pendeta")
+
+  // D. Keluarga
+  statusPernikahan    StatusPernikahan @default(BELUM_MENIKAH) @map("status_pernikahan")
+  namaPasangan        String?          @map("nama_pasangan")
+  jumlahAnak          Int              @default(0) @map("jumlah_anak")
+
+  // E. Pendidikan
+  pendidikanTerakhir  String?   @map("pendidikan_terakhir")
+  institusiTeologi    String?   @map("institusi_teologi")
+  tahunLulus          Int?      @map("tahun_lulus")
+  riwayatPendidikan   String?   @map("riwayat_pendidikan") @db.Text
+
+  // F. Media
+  biografiSingkat     String?   @map("biografi_singkat") @db.Text
+  igLink              String?   @map("ig_link")
+  fbLink              String?   @map("fb_link")
+  ytLink              String?   @map("yt_link")
+
+  // G. Internal
+  catatanInternal     String?   @map("catatan_internal") @db.Text
+  riwayatPelayananText String?  @map("riwayat_pelayanan_text") @db.Text
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@map("pendeta")
+}
+
+model Pelayanan {
+  id                        String   @id @default(uuid())
+  namaPelayanan             String   @map("nama_pelayanan")
+  kategoriPelayanan         String   @map("kategori_pelayanan")
+  deskripsiPelayanan        String?  @map("deskripsi_pelayanan") @db.Text
+  koordinatorPelayanan      String   @map("koordinator_pelayanan")
+  jumlahKebutuhanPersonel   Int      @default(0) @map("jumlah_kebutuhan_personel")
+  statusPelayanan           String   @default("AKTIF") @map("status_pelayanan")
+  jadwalPelayanan           String?  @map("jadwal_pelayanan")
+  catatanPelayanan          String?  @map("catatan_pelayanan") @db.Text
+
+  createdAt                 DateTime @default(now()) @map("created_at")
+  updatedAt                 DateTime @updatedAt @map("updated_at")
+
+  @@map("pelayanan")
 }

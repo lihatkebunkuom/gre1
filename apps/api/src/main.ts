@@ -4,7 +4,7 @@ import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, BadRequestException } from '@nestjs/common';
 import { json } from 'express';
 
 async function bootstrap() {
@@ -20,6 +20,13 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     transform: true,
+    exceptionFactory: (errors) => {
+      const result = errors.map((error) => ({
+        property: error.property,
+        message: error.constraints ? Object.values(error.constraints)[0] : 'Invalid value',
+      }));
+      return new BadRequestException(result);
+    },
   }));
 
   const config = new DocumentBuilder()
@@ -30,10 +37,16 @@ async function bootstrap() {
     .build();
   
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup('docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+    customSiteTitle: 'Gereja Digital API Docs',
+  });
 
-  await app.listen(process.env.PORT ?? 3000);
-  console.log(`Application is running on: ${await app.getUrl()}`);
-  console.log(`Swagger Docs available at: ${await app.getUrl()}/docs`);
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+  console.log(`Application is running on: http://localhost:${port}/api`);
+  console.log(`Swagger Docs available at: http://localhost:${port}/docs`);
 }
 bootstrap();

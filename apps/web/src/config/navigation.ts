@@ -62,10 +62,13 @@ export const SIDEBAR_GROUPS: NavGroup[] = [
         ]
       },
       {
-        title: "Data Pendeta", // NEW MENU
-        href: "/pendeta",
+        title: "Data Pendeta",
         icon: UserCheck,
-        roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA']
+        roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
+        items: [
+          { title: "Daftar Pendeta", href: "/pendeta", roles: [] },
+          { title: "Tambah Pendeta", href: "/pendeta/create", roles: [] },
+        ]
       },
       {
         title: "Pelayan & SDM",
@@ -73,6 +76,7 @@ export const SIDEBAR_GROUPS: NavGroup[] = [
         roles: ['ADMIN', 'SEKRETARIS'],
         items: [
           { title: "Daftar Pelayan", href: "/pelayan", roles: [] },
+          { title: "Tambah Pelayan", href: "/pelayan/create", roles: [] },
           { title: "Penugasan", href: "/pelayan/penugasan", roles: [] },
         ]
       }

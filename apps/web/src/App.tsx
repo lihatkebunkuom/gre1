@@ -22,10 +22,12 @@ import BeritaKomselPage from "./pages/cms/konten/BeritaKomselPage";
 import BuletinPage from "./pages/cms/konten/BuletinPage";
 import TokoJemaatPage from "./pages/cms/toko/TokoJemaatPage";
 import DataPendetaPage from "./pages/cms/pendeta/DataPendetaPage";
+import PendetaFormPage from "./pages/cms/pendeta/PendetaFormPage";
 import JemaatListPage from "./pages/cms/jemaat/JemaatListPage";
 import JemaatFormPage from "./pages/cms/jemaat/JemaatFormPage";
 import JemaatWilayahPage from "./pages/cms/jemaat/JemaatWilayahPage";
 import DaftarPelayananPage from "./pages/cms/pelayanan/DaftarPelayananPage";
+import PelayananFormPage from "./pages/cms/pelayanan/PelayananFormPage";
 import PenugasanPage from "./pages/cms/pelayanan/PenugasanPage";
 import KalenderEventPage from "./pages/cms/ibadah/KalenderEventPage";
 import JadwalIbadahPage from "./pages/cms/ibadah/JadwalIbadahPage";
@@ -98,9 +100,13 @@ const App = () => (
                 <Route path="/jemaat/edit/:id" element={<JemaatFormPage />} />
                 <Route path="/jemaat/wilayah" element={<JemaatWilayahPage />} />
                 <Route path="/pendeta" element={<DataPendetaPage />} />
+                <Route path="/pendeta/create" element={<PendetaFormPage />} />
+                <Route path="/pendeta/edit/:id" element={<PendetaFormPage />} />
                 
                 {/* Pelayanan & SDM */}
                 <Route path="/pelayan" element={<DaftarPelayananPage />} />
+                <Route path="/pelayan/create" element={<PelayananFormPage />} />
+                <Route path="/pelayan/edit/:id" element={<PelayananFormPage />} />
                 <Route path="/pelayan/penugasan" element={<PenugasanPage />} />
 
                 {/* Pelayanan & Ibadah */}
