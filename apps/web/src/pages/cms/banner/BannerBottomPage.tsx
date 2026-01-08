@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Plus, Trash2, ImagePlus, RefreshCw } from "lucide-react";
+import { Plus, Trash2, ImagePlus, RefreshCw, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { PageHeader } from "@/components/common/PageHeader";
 import { ImageUpload } from "@/components/common/ImageUpload";
@@ -30,88 +31,90 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { apiClient } from "@/services/api-client";
 
 // --- Schema & Types ---
 
 const formSchema = z.object({
-  image: z.string().min(1, { message: "Gambar wajib diupload" }),
+  imageUrl: z.string().min(1, { message: "Gambar wajib diupload" }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-interface BannerBottom {
+interface Banner {
   id: string;
-  image: string;
+  imageUrl: string;
 }
 
-// --- Mock Data ---
-
-const MOCK_DATA: BannerBottom[] = [
-  {
-    id: "1",
-    image: "https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=800&q=80",
-  },
-  {
-    id: "2",
-    image: "https://images.unsplash.com/photo-1516280440614-6697288d5d38?w=800&q=80",
-  },
-  {
-    id: "3",
-    image: "https://images.unsplash.com/photo-1629231868356-8208a650a24b?w=800&q=80",
-  }
-];
-
 const BannerBottomPage = () => {
-  const [data, setData] = useState<BannerBottom[]>(MOCK_DATA);
+  const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Fetch Data
+  const { data: banners, isLoading } = useQuery({
+    queryKey: ['banners', 'BOTTOM'],
+    queryFn: async () => {
+      const response = await apiClient.get<Banner[]>('/banners?position=BOTTOM');
+      return response as unknown as Banner[];
+    }
+  });
 
   // Form
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      image: "",
+      imageUrl: "",
     },
+  });
+
+  // Mutations
+  const mutation = useMutation({
+    mutationFn: async (values: FormValues) => {
+      const payload = {
+        ...values,
+        position: 'BOTTOM',
+      };
+      if (editingId) {
+        return apiClient.patch(`/banners/${editingId}`, payload);
+      }
+      return apiClient.post('/banners', payload);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['banners', 'BOTTOM'] });
+      toast.success(editingId ? "Banner berhasil diperbarui" : "Banner baru berhasil ditambahkan");
+      setIsDialogOpen(false);
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiClient.delete(`/banners/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['banners', 'BOTTOM'] });
+      toast.success("Banner berhasil dihapus");
+    }
   });
 
   // --- Handlers ---
 
   const handleAddNew = () => {
     setEditingId(null);
-    form.reset({ image: "" });
+    form.reset({ imageUrl: "" });
     setIsDialogOpen(true);
   };
 
-  const handleReplace = (item: BannerBottom) => {
+  const handleReplace = (item: Banner) => {
     setEditingId(item.id);
-    form.reset({ image: item.image });
+    form.reset({ imageUrl: item.imageUrl });
     setIsDialogOpen(true);
   };
 
   const handleDelete = (id: string) => {
-    setData((prev) => prev.filter((item) => item.id !== id));
-    toast.success("Banner berhasil dihapus");
+    deleteMutation.mutate(id);
   };
 
   const onSubmit = (values: FormValues) => {
-    if (editingId) {
-      // Update existing
-      setData((prev) =>
-        prev.map((item) =>
-          item.id === editingId ? { ...item, image: values.image } : item
-        )
-      );
-      toast.success("Gambar banner berhasil diganti");
-    } else {
-      // Create new
-      const newItem: BannerBottom = {
-        id: Math.random().toString(36).substr(2, 9),
-        image: values.image,
-      };
-      setData((prev) => [...prev, newItem]);
-      toast.success("Banner baru berhasil ditambahkan");
-    }
-    setIsDialogOpen(false);
+    mutation.mutate(values);
   };
 
   return (
@@ -134,23 +137,27 @@ const BannerBottomPage = () => {
           className="border-2 border-dashed rounded-lg flex flex-col items-center justify-center p-6 h-48 cursor-pointer hover:bg-muted/50 hover:border-primary/50 transition-colors group"
         >
           <div className="bg-muted group-hover:bg-background p-3 rounded-full mb-2 transition-colors">
-            <ImagePlus className="h-6 w-6 text-muted-foreground group-hover:text-primary" />
+            <ImagePlus className="h-6 x-6 text-muted-foreground group-hover:text-primary" />
           </div>
           <p className="text-sm font-medium text-muted-foreground group-hover:text-foreground">Upload Baru</p>
         </div>
 
         {/* Banner Cards */}
-        {data.map((item) => (
+        {isLoading ? (
+          <div className="col-span-full flex justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : banners?.map((item) => (
           <Card key={item.id} className="overflow-hidden flex flex-col h-48 group shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-0 flex-1 relative bg-muted">
               <img 
-                src={item.image} 
+                src={item.imageUrl} 
                 alt="Banner Bottom" 
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                  <Button variant="secondary" size="sm" onClick={() => handleReplace(item)}>
-                    <RefreshCw className="mr-2 h-4 w-4" /> Preview
+                    <RefreshCw className="mr-2 h-4 w-4" /> Edit
                  </Button>
               </div>
             </CardContent>
@@ -200,7 +207,7 @@ const BannerBottomPage = () => {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="image"
+                name="imageUrl"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Gambar</FormLabel>
@@ -220,7 +227,8 @@ const BannerBottomPage = () => {
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Batal
                 </Button>
-                <Button type="submit">
+                <Button type="submit" disabled={mutation.isPending}>
+                  {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {editingId ? "Simpan Perubahan" : "Upload"}
                 </Button>
               </DialogFooter>

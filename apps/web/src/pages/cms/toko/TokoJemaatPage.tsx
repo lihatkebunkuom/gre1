@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Edit, Plus, Trash2, ShoppingBag, Star, PackageOpen, X, Image as ImageIcon } from "lucide-react";
+import { Edit, Plus, Trash2, ShoppingBag, Star, PackageOpen, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Slider } from "@/components/ui/slider";
 import { ImageUpload } from "@/components/common/ImageUpload";
 import { Badge } from "@/components/ui/badge";
+import { apiClient } from "@/services/api-client";
 
 const formSchema = z.object({
   title: z.string().min(1, { message: "Nama produk wajib diisi" }),
@@ -34,24 +36,6 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 interface Produk extends FormValues { id: string; }
 
-const MOCK_DATA: Produk[] = [
-  { 
-    id: "1", title: "Kaos Rohani 'Blessed'", harga: 85000, rating: 5, 
-    deskripsi: "Bahan Cotton Combed 30s, sablon plastisol, nyaman dipakai.",
-    images: ["https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80"]
-  },
-  { 
-    id: "2", title: "Buku Renungan Harian", harga: 45000, rating: 4, 
-    deskripsi: "Kumpulan renungan inspiratif untuk menemani saat teduh Anda.",
-    images: ["https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=800&q=80"]
-  },
-  { 
-    id: "3", title: "Mug Keramik Custom", harga: 30000, rating: 5, 
-    deskripsi: "Mug cantik dengan ayat emas pilihan.",
-    images: [] 
-  },
-];
-
 const formatRupiah = (number: number) => {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -61,57 +45,80 @@ const formatRupiah = (number: number) => {
 };
 
 const TokoJemaatPage = () => {
-  const [data, setData] = useState<Produk[]>(MOCK_DATA);
+  const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  
-  // State dummy untuk mereset komponen ImageUpload setelah upload
   const [uploadKey, setUploadKey] = useState(0);
+
+  // Fetch Data
+  const { data: products, isLoading } = useQuery({
+    queryKey: ['produk'],
+    queryFn: async () => {
+      const response = await apiClient.get<Produk[]>('/produk');
+      return response as unknown as Produk[];
+    }
+  });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { title: "", harga: 0, rating: 5, deskripsi: "", images: [] },
   });
 
+  // Mutations
+  const mutation = useMutation({
+    mutationFn: async (values: FormValues) => {
+      if (editingId) {
+        return apiClient.patch(`/produk/${editingId}`, values);
+      }
+      return apiClient.post('/produk', values);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['produk'] });
+      toast.success(editingId ? "Produk diperbarui" : "Produk ditambahkan");
+      setIsDialogOpen(false);
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Terjadi kesalahan");
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiClient.delete(`/produk/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['produk'] });
+      toast.success("Produk berhasil dihapus");
+    }
+  });
+
   const handleAddNew = () => {
     setEditingId(null);
     form.reset({ title: "", harga: 0, rating: 5, deskripsi: "", images: [] });
-    setUploadKey(prev => prev + 1); // Reset uploader
+    setUploadKey(prev => prev + 1);
     setIsDialogOpen(true);
   };
 
   const handleEdit = (item: Produk) => {
     setEditingId(item.id);
     form.reset({ ...item, images: item.images || [] });
-    setUploadKey(prev => prev + 1); // Reset uploader
+    setUploadKey(prev => prev + 1);
     setIsDialogOpen(true);
   };
 
   const handleDelete = (id: string) => {
-    setData((prev) => prev.filter((item) => item.id !== id));
-    toast.success("Produk dihapus");
+    deleteMutation.mutate(id);
   };
 
   const onSubmit = (values: FormValues) => {
-    if (editingId) {
-      setData((prev) => prev.map((item) => item.id === editingId ? { ...values, id: editingId } : item));
-      toast.success("Produk diperbarui");
-    } else {
-      setData((prev) => [{ ...values, id: Math.random().toString(36).substr(2, 9) }, ...prev]);
-      toast.success("Produk ditambahkan");
-    }
-    setIsDialogOpen(false);
+    mutation.mutate(values);
   };
 
-  // Helper untuk menambah gambar ke array
   const handleAddImage = (url: string, currentImages: string[], onChange: (val: string[]) => void) => {
     if (url) {
       onChange([...currentImages, url]);
-      setUploadKey(prev => prev + 1); // Force reset component upload agar siap untuk file baru
+      setUploadKey(prev => prev + 1);
     }
   };
 
-  // Helper untuk menghapus gambar dari array
   const handleRemoveImage = (index: number, currentImages: string[], onChange: (val: string[]) => void) => {
     const newImages = [...currentImages];
     newImages.splice(index, 1);
@@ -124,7 +131,11 @@ const TokoJemaatPage = () => {
         <Button onClick={handleAddNew}><Plus className="mr-2 h-4 w-4" /> Tambah Produk</Button>
       </PageHeader>
 
-      {data.length === 0 ? (
+      {isLoading ? (
+        <div className="flex justify-center py-24">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+      ) : products?.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed rounded-lg bg-muted/20">
             <PackageOpen className="mx-auto h-12 w-12 text-muted-foreground" />
             <h3 className="mt-4 text-lg font-semibold">Belum ada produk</h3>
@@ -133,7 +144,7 @@ const TokoJemaatPage = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {data.map((item) => (
+            {products?.map((item) => (
             <Card key={item.id} className="flex flex-col h-full hover:shadow-md transition-shadow overflow-hidden">
                 <div className="aspect-video bg-muted relative group">
                     {item.images && item.images.length > 0 ? (
@@ -205,7 +216,6 @@ const TokoJemaatPage = () => {
                       <FormLabel>Galeri Foto</FormLabel>
                       <FormControl>
                         <div className="space-y-4">
-                          {/* List Gambar yang sudah diupload */}
                           {field.value.length > 0 && (
                             <div className="grid grid-cols-3 gap-2">
                               {field.value.map((img, idx) => (
@@ -223,18 +233,13 @@ const TokoJemaatPage = () => {
                             </div>
                           )}
                           
-                          {/* Komponen Upload */}
                           <div className="border-2 border-dashed rounded-lg p-4 bg-muted/30">
                             <p className="text-xs text-muted-foreground mb-2 font-medium">Tambah Gambar Baru:</p>
-                            {/* Key digunakan untuk mereset komponen setelah upload sukses */}
                             <ImageUpload 
                               key={uploadKey} 
                               value="" 
                               onChange={(url) => handleAddImage(url, field.value, field.onChange)} 
                             />
-                            <p className="text-[10px] text-muted-foreground mt-2 text-center">
-                              Upload satu per satu. Klik upload lagi untuk menambah gambar.
-                            </p>
                           </div>
                         </div>
                       </FormControl>
@@ -245,7 +250,13 @@ const TokoJemaatPage = () => {
                 </div>
               </div>
 
-              <DialogFooter><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Batal</Button><Button type="submit">Simpan</Button></DialogFooter>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Batal</Button>
+                <Button type="submit" disabled={mutation.isPending}>
+                  {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Simpan
+                </Button>
+              </DialogFooter>
             </form>
           </Form>
         </DialogContent>

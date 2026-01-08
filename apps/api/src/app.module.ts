@@ -9,6 +9,15 @@ import { PendetaModule } from './pendeta/pendeta.module';
 import { PelayananModule } from './pelayanan/pelayanan.module';
 import { QrSessionModule } from './qr-session/qr-session.module';
 import { KehadiranModule } from './kehadiran/kehadiran.module';
+import { BannerModule } from './banner/banner.module';
+import { AlkitabModule } from './alkitab/alkitab.module';
+import { DoaModule } from './doa/doa.module';
+import { ProdukModule } from './produk/produk.module';
+import { KeuanganModule } from './keuangan/keuangan.module';
+import { KalenderEventModule } from './kalender-event/kalender-event.module';
+import { JadwalIbadahModule } from './jadwal-ibadah/jadwal-ibadah.module';
+import { KebaktianMingguModule } from './kebaktian-minggu/kebaktian-minggu.module';
+import { AbsensiKehadiranModule } from './absensi-kehadiran/absensi-kehadiran.module';
 
 @Module({
   imports: [
@@ -19,7 +28,16 @@ import { KehadiranModule } from './kehadiran/kehadiran.module';
     PendetaModule,
     PelayananModule,
     QrSessionModule,
-    KehadiranModule
+    KehadiranModule,
+    BannerModule,
+    AlkitabModule,
+    DoaModule,
+    ProdukModule,
+    KeuanganModule,
+    KalenderEventModule,
+    JadwalIbadahModule,
+    KebaktianMingguModule,
+    AbsensiKehadiranModule
   ],
   controllers: [AppController],
   providers: [AppService],

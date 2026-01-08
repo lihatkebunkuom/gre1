@@ -30,9 +30,13 @@ import DaftarPelayananPage from "./pages/cms/pelayanan/DaftarPelayananPage";
 import PelayananFormPage from "./pages/cms/pelayanan/PelayananFormPage";
 import PenugasanPage from "./pages/cms/pelayanan/PenugasanPage";
 import KalenderEventPage from "./pages/cms/ibadah/KalenderEventPage";
+import CreateKalenderEventPage from "./pages/cms/ibadah/CreateKalenderEventPage";
 import JadwalIbadahPage from "./pages/cms/ibadah/JadwalIbadahPage";
+import CreateJadwalIbadahPage from "./pages/cms/ibadah/CreateJadwalIbadahPage";
 import KebaktianMingguPage from "./pages/cms/ibadah/KebaktianMingguPage";
+import CreateKebaktianMingguPage from "./pages/cms/ibadah/CreateKebaktianMingguPage";
 import AbsensiKehadiranPage from "./pages/cms/ibadah/AbsensiKehadiranPage";
+import CreateAbsensiKehadiranPage from "./pages/cms/ibadah/CreateAbsensiKehadiranPage";
 import DaftarDivisiPage from "./pages/cms/divisi/DaftarDivisiPage";
 import AnggotaTimPage from "./pages/cms/divisi/AnggotaTimPage";
 import ArtikelRenunganPage from "./pages/cms/konten/ArtikelRenunganPage";
@@ -122,11 +126,25 @@ const App = () => (
                 <Route path="/pelayan/edit/:id" element={<PelayananFormPage />} />
                 <Route path="/pelayan/penugasan" element={<PenugasanPage />} />
 
+import AbsensiKehadiranPage from "./pages/cms/ibadah/AbsensiKehadiranPage";
+import CreateKalenderEventPage from "./pages/cms/ibadah/CreateKalenderEventPage";
+import CreateJadwalIbadahPage from "./pages/cms/ibadah/CreateJadwalIbadahPage";
+import CreateKebaktianMingguPage from "./pages/cms/ibadah/CreateKebaktianMingguPage";
+import CreateAbsensiKehadiranPage from "./pages/cms/ibadah/CreateAbsensiKehadiranPage";
+import DaftarDivisiPage from "./pages/cms/divisi/DaftarDivisiPage";
+import AnggotaTimPage from "./pages/cms/divisi/AnggotaTimPage";
+import ArtikelRenunganPage from "./pages/cms/konten/ArtikelRenunganPage";
+import MediaGaleriPage from "./pages/cms/konten/MediaGaleriPage";
+// ...
                 {/* Pelayanan & Ibadah */}
                 <Route path="/event/kalender" element={<KalenderEventPage />} />
+                <Route path="/event/kalender/create" element={<CreateKalenderEventPage />} />
                 <Route path="/ibadah" element={<JadwalIbadahPage />} />
+                <Route path="/ibadah/create" element={<CreateJadwalIbadahPage />} />
                 <Route path="/ibadah/kebaktian" element={<KebaktianMingguPage />} />
+                <Route path="/ibadah/kebaktian/create" element={<CreateKebaktianMingguPage />} />
                 <Route path="/ibadah/kehadiran" element={<AbsensiKehadiranPage />} />
+                <Route path="/ibadah/kehadiran/create" element={<CreateAbsensiKehadiranPage />} />
                 
                 {/* Divisi Pelayanan */}
                 <Route path="/pelayanan" element={<DaftarDivisiPage />} />

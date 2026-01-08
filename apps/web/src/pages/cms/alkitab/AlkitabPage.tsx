@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Edit, Plus, Trash2, Book, Mic, Keyboard } from "lucide-react";
+import { Edit, Plus, Trash2, Book, Mic, Keyboard, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -26,50 +27,35 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Badge } from "@/components/ui/badge";
 import { TextToSpeechPlayer } from "@/components/common/TextToSpeechPlayer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { apiClient } from "@/services/api-client";
 
 // --- Schema ---
 const formSchema = z.object({
-  versi_alkitab: z.string().min(1, "Versi wajib diisi"),
+  versiAlkitab: z.string().min(1, "Versi wajib diisi"),
   kitab: z.string().min(1, "Kitab wajib diisi"),
   pasal: z.coerce.number().min(1),
   ayat: z.coerce.number().min(1),
-  teks_ayat: z.string().min(5, "Teks ayat wajib diisi"),
+  teksAyat: z.string().min(5, "Teks ayat wajib diisi"),
   bahasa: z.string().default("id-ID"),
-  kategori_ayat: z.string().optional(),
-  kata_kunci: z.string().optional(),
+  kategoriAyat: z.string().optional(),
+  kataKunci: z.string().optional(),
   
   // TTS Fields
-  tts_status: z.boolean().default(true),
-  tts_bahasa: z.string().default("id-ID"),
-  tts_kecepatan_baca: z.string().default("1"),
+  ttsStatus: z.boolean().default(true),
+  ttsBahasa: z.string().default("id-ID"),
+  ttsKecepatanBaca: z.string().default("1"),
   
   // Meta
-  status_tampil: z.string().default("AKTIF"),
-  catatan_ayat: z.string().optional(),
+  statusTampil: z.string().default("AKTIF"),
+  catatanAyat: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 interface AyatAlkitab extends FormValues { id: string; }
 
-// --- Mock Data ---
-const MOCK_DATA: AyatAlkitab[] = [
-  { 
-    id: "1", versi_alkitab: "TB", kitab: "Yohanes", pasal: 3, ayat: 16, 
-    teks_ayat: "Karena begitu besar kasih Allah akan dunia ini, sehingga Ia telah mengaruniakan Anak-Nya yang tunggal, supaya setiap orang yang percaya kepada-Nya tidak binasa, melainkan beroleh hidup yang kekal.", 
-    bahasa: "id-ID", kategori_ayat: "Penguatan", kata_kunci: "kasih, keselamatan",
-    tts_status: true, tts_bahasa: "id-ID", tts_kecepatan_baca: "1", status_tampil: "AKTIF", catatan_ayat: "" 
-  },
-  { 
-    id: "2", versi_alkitab: "TB", kitab: "Mazmur", pasal: 23, ayat: 1, 
-    teks_ayat: "TUHAN adalah gembalaku, takkan kekurangan aku.", 
-    bahasa: "id-ID", kategori_ayat: "Doa", kata_kunci: "gembala, pemeliharaan",
-    tts_status: true, tts_bahasa: "id-ID", tts_kecepatan_baca: "0.8", status_tampil: "AKTIF", catatan_ayat: "" 
-  },
-];
-
 // DATA LENGKAP KITAB
 const KITAB_PL = [
-  "Kejadian", "Keluaran", "Imamat", "Bilangan", "Ulangan", "Yosua", "Hakim-hakim", "Rut", 
+  "Kejadian", "Keluaran", "Imamat", "Bilangan", "Ulangan", "Yosua", "Hakim-hamim", "Rut", 
   "1 Samuel", "2 Samuel", "1 Raja-raja", "2 Raja-raja", "1 Tawarikh", "2 Tawarikh", "Ezra", "Nehemia", "Ester",
   "Ayub", "Mazmur", "Amsal", "Pengkhotbah", "Kidung Agung",
   "Yesaya", "Yeremia", "Ratapan", "Yehezkiel", "Daniel",
@@ -87,7 +73,7 @@ const KITAB_PB = [
 const VERSI_OPTIONS = ["TB (Terjemahan Baru)", "BIS (Bahasa Indonesia Sehari-hari)", "NIV (English)"];
 
 const AlkitabPage = () => {
-  const [data, setData] = useState<AyatAlkitab[]>(MOCK_DATA);
+  const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   
@@ -95,13 +81,45 @@ const AlkitabPage = () => {
   const [manualVersi, setManualVersi] = useState(false);
   const [manualKitab, setManualKitab] = useState(false);
 
+  // Fetch Data
+  const { data: listAyat, isLoading } = useQuery({
+    queryKey: ['alkitab'],
+    queryFn: async () => {
+      const response = await apiClient.get<AyatAlkitab[]>('/alkitab');
+      return response as unknown as AyatAlkitab[];
+    }
+  });
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      versi_alkitab: "TB", kitab: "", pasal: 1, ayat: 1, teks_ayat: "", bahasa: "id-ID",
-      kategori_ayat: "", kata_kunci: "", tts_status: true, tts_bahasa: "id-ID", tts_kecepatan_baca: "1",
-      status_tampil: "AKTIF", catatan_ayat: ""
+      versiAlkitab: "TB", kitab: "", pasal: 1, ayat: 1, teksAyat: "", bahasa: "id-ID",
+      kategoriAyat: "", kataKunci: "", ttsStatus: true, ttsBahasa: "id-ID", ttsKecepatanBaca: "1",
+      statusTampil: "AKTIF", catatanAyat: ""
     },
+  });
+
+  // Mutations
+  const mutation = useMutation({
+    mutationFn: async (values: FormValues) => {
+      if (editingId) {
+        return apiClient.patch(`/alkitab/${editingId}`, values);
+      }
+      return apiClient.post('/alkitab', values);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['alkitab'] });
+      toast.success(editingId ? "Ayat diperbarui" : "Ayat ditambahkan");
+      setIsDialogOpen(false);
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiClient.delete(`/alkitab/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['alkitab'] });
+      toast.success("Ayat berhasil dihapus");
+    }
   });
 
   const handleAddNew = () => {
@@ -109,9 +127,9 @@ const AlkitabPage = () => {
     setManualVersi(false);
     setManualKitab(false);
     form.reset({
-      versi_alkitab: "TB", kitab: "", pasal: 1, ayat: 1, teks_ayat: "", bahasa: "id-ID",
-      kategori_ayat: "", kata_kunci: "", tts_status: true, tts_bahasa: "id-ID", tts_kecepatan_baca: "1",
-      status_tampil: "AKTIF", catatan_ayat: ""
+      versiAlkitab: "TB", kitab: "", pasal: 1, ayat: 1, teksAyat: "", bahasa: "id-ID",
+      kategoriAyat: "", kataKunci: "", ttsStatus: true, ttsBahasa: "id-ID", ttsKecepatanBaca: "1",
+      statusTampil: "AKTIF", catatanAyat: ""
     });
     setIsDialogOpen(true);
   };
@@ -126,7 +144,7 @@ const AlkitabPage = () => {
 
     // Cek apakah versi ada di list standar
     const standardVersiCodes = VERSI_OPTIONS.map(v => v.split(" ")[0]);
-    const isStandardVersi = standardVersiCodes.includes(item.versi_alkitab);
+    const isStandardVersi = standardVersiCodes.includes(item.versiAlkitab);
     setManualVersi(!isStandardVersi);
 
     form.reset({ ...item });
@@ -134,25 +152,17 @@ const AlkitabPage = () => {
   };
 
   const handleDelete = (id: string) => {
-    setData((prev) => prev.filter((item) => item.id !== id));
-    toast.success("Ayat berhasil dihapus");
+    deleteMutation.mutate(id);
   };
 
   const onSubmit = (values: FormValues) => {
-    if (editingId) {
-      setData((prev) => prev.map((item) => item.id === editingId ? { ...values, id: editingId } : item));
-      toast.success("Ayat diperbarui");
-    } else {
-      setData((prev) => [{ ...values, id: Math.random().toString(36).substr(2, 9) }, ...prev]);
-      toast.success("Ayat ditambahkan");
-    }
-    setIsDialogOpen(false);
+    mutation.mutate(values);
   };
 
   // Helper untuk preview text TTS
-  const watchTeks = form.watch("teks_ayat");
-  const watchRate = form.watch("tts_kecepatan_baca");
-  const watchLang = form.watch("tts_bahasa");
+  const watchTeks = form.watch("teksAyat");
+  const watchRate = form.watch("ttsKecepatanBaca");
+  const watchLang = form.watch("ttsBahasa");
 
   return (
     <div className="space-y-6">
@@ -173,30 +183,34 @@ const AlkitabPage = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((item) => (
+            {isLoading ? (
+               <TableRow><TableCell colSpan={6} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto" /></TableCell></TableRow>
+            ) : listAyat?.length === 0 ? (
+               <TableRow><TableCell colSpan={6} className="h-24 text-center text-muted-foreground">Tidak ada data.</TableCell></TableRow>
+            ) : listAyat?.map((item) => (
               <TableRow key={item.id}>
                 <TableCell>
                   <div className="font-medium">{item.kitab} {item.pasal}:{item.ayat}</div>
-                  <div className="text-xs text-muted-foreground">{item.versi_alkitab}</div>
+                  <div className="text-xs text-muted-foreground">{item.versiAlkitab}</div>
                 </TableCell>
                 <TableCell>
-                  <p className="line-clamp-2 text-sm italic">"{item.teks_ayat}"</p>
+                  <p className="line-clamp-2 text-sm italic">"{item.teksAyat}"</p>
                 </TableCell>
-                <TableCell><Badge variant="outline">{item.kategori_ayat}</Badge></TableCell>
+                <TableCell><Badge variant="outline">{item.kategoriAyat}</Badge></TableCell>
                 <TableCell>
-                  {item.tts_status ? (
+                  {item.ttsStatus ? (
                     <TextToSpeechPlayer 
-                      text={`${item.kitab} pasal ${item.pasal} ayat ${item.ayat}. ${item.teks_ayat}`} 
-                      rate={parseFloat(item.tts_kecepatan_baca)}
-                      lang={item.tts_bahasa}
+                      text={`${item.kitab} pasal ${item.pasal} ayat ${item.ayat}. ${item.teksAyat}`} 
+                      rate={parseFloat(item.ttsKecepatanBaca)}
+                      lang={item.ttsBahasa}
                     />
                   ) : (
                     <span className="text-muted-foreground text-xs">-</span>
                   )}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={item.status_tampil === "AKTIF" ? "default" : "secondary"}>
-                    {item.status_tampil}
+                  <Badge variant={item.statusTampil === "AKTIF" ? "default" : "secondary"}>
+                    {item.statusTampil}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
@@ -228,7 +242,7 @@ const AlkitabPage = () => {
                 <TabsContent value="konten" className="space-y-4 pt-4">
                   <div className="grid grid-cols-2 gap-4">
                     {/* VERSI ALKITAB */}
-                    <FormField control={form.control} name="versi_alkitab" render={({ field }) => (
+                    <FormField control={form.control} name="versiAlkitab" render={({ field }) => (
                       <FormItem>
                         <div className="flex justify-between items-center">
                           <FormLabel>Versi</FormLabel>
@@ -311,14 +325,14 @@ const AlkitabPage = () => {
                       <FormItem><FormLabel>Ayat</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                   </div>
-                  <FormField control={form.control} name="teks_ayat" render={({ field }) => (
+                  <FormField control={form.control} name="teksAyat" render={({ field }) => (
                     <FormItem><FormLabel>Isi Teks Ayat</FormLabel><FormControl><Textarea className="h-24" placeholder="Tuliskan isi ayat..." {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <div className="grid grid-cols-2 gap-4">
-                    <FormField control={form.control} name="kategori_ayat" render={({ field }) => (
-                      <FormItem><FormLabel>Kategori</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Pilih Kategori" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Penguatan">Penguatan</SelectItem><SelectItem value="Doa">Doa</SelectItem><SelectItem value="Janji Tuhan">Janji Tuhan</SelectItem><SelectItem value="Teguran">Teguran</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                    <FormField control={form.control} name="kategoriAyat" render={({ field }) => (
+                      <FormItem><FormLabel>Kategori</FormLabel><Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Pilih Kategori" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Penguatan">Penguatan</SelectItem><SelectItem value="Doa">Doa</SelectItem><SelectItem value="Janji Tuhan">Janji Tuhan</SelectItem><SelectItem value="Teguran">Teguran</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                     )} />
-                    <FormField control={form.control} name="kata_kunci" render={({ field }) => (
+                    <FormField control={form.control} name="kataKunci" render={({ field }) => (
                       <FormItem><FormLabel>Kata Kunci</FormLabel><FormControl><Input placeholder="kasih, damai (pisahkan koma)" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                   </div>
@@ -330,19 +344,19 @@ const AlkitabPage = () => {
                       <FormLabel className="text-base">Aktifkan Text to Speech</FormLabel>
                       <FormDescription>Izinkan ayat ini dibacakan oleh sistem.</FormDescription>
                     </div>
-                    <FormField control={form.control} name="tts_status" render={({ field }) => (
+                    <FormField control={form.control} name="ttsStatus" render={({ field }) => (
                       <FormItem><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
                     )} />
                   </div>
 
-                  {form.watch("tts_status") && (
+                  {form.watch("ttsStatus") && (
                     <div className="space-y-4 border rounded-lg p-4">
                       <div className="grid grid-cols-2 gap-4">
-                        <FormField control={form.control} name="tts_bahasa" render={({ field }) => (
-                          <FormItem><FormLabel>Bahasa Suara</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="id-ID">Indonesia</SelectItem><SelectItem value="en-US">English (US)</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                        <FormField control={form.control} name="ttsBahasa" render={({ field }) => (
+                          <FormItem><FormLabel>Bahasa Suara</FormLabel><Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="id-ID">Indonesia</SelectItem><SelectItem value="en-US">English (US)</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                         )} />
-                        <FormField control={form.control} name="tts_kecepatan_baca" render={({ field }) => (
-                          <FormItem><FormLabel>Kecepatan Baca</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="0.5">Lambat (0.5x)</SelectItem><SelectItem value="0.8">Sedang (0.8x)</SelectItem><SelectItem value="1">Normal (1.0x)</SelectItem><SelectItem value="1.2">Cepat (1.2x)</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                        <FormField control={form.control} name="ttsKecepatanBaca" render={({ field }) => (
+                          <FormItem><FormLabel>Kecepatan Baca</FormLabel><Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="0.5">Lambat (0.5x)</SelectItem><SelectItem value="0.8">Sedang (0.8x)</SelectItem><SelectItem value="1">Normal (1.0x)</SelectItem><SelectItem value="1.2">Cepat (1.2x)</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                         )} />
                       </div>
                       
@@ -358,17 +372,17 @@ const AlkitabPage = () => {
                   )}
 
                   <div className="grid grid-cols-2 gap-4">
-                    <FormField control={form.control} name="status_tampil" render={({ field }) => (
-                      <FormItem><FormLabel>Status Tampil</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="AKTIF">Aktif</SelectItem><SelectItem value="NONAKTIF">Nonaktif</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                    <FormField control={form.control} name="statusTampil" render={({ field }) => (
+                      <FormItem><FormLabel>Status Tampil</FormLabel><Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="AKTIF">Aktif</SelectItem><SelectItem value="NONAKTIF">Nonaktif</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                     )} />
                   </div>
-                  <FormField control={form.control} name="catatan_ayat" render={({ field }) => (
+                  <FormField control={form.control} name="catatanAyat" render={({ field }) => (
                     <FormItem><FormLabel>Catatan Internal</FormLabel><FormControl><Input placeholder="Catatan editor..." {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                 </TabsContent>
               </Tabs>
 
-              <DialogFooter><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Batal</Button><Button type="submit">Simpan</Button></DialogFooter>
+              <DialogFooter><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Batal</Button><Button type="submit" disabled={mutation.isPending}>{mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Simpan</Button></DialogFooter>
             </form>
           </Form>
         </DialogContent>

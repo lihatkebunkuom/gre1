@@ -4,8 +4,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
-import { Edit, Plus, Trash2, CalendarIcon, HeartHandshake, Mic } from "lucide-react";
+import { Edit, Plus, Trash2, CalendarIcon, HeartHandshake, Mic, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -32,98 +33,114 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Badge } from "@/components/ui/badge";
 import { TextToSpeechPlayer } from "@/components/common/TextToSpeechPlayer";
 import { cn } from "@/lib/utils";
+import { apiClient } from "@/services/api-client";
 
 // --- Schema ---
 const formSchema = z.object({
-  judul_pokok_doa: z.string().min(3, "Judul wajib diisi"),
-  kategori_doa: z.string().min(1, "Pilih kategori"),
-  deskripsi_doa: z.string().min(10, "Deskripsi minimal 10 karakter"),
-  pengaju_doa: z.string().min(1, "Pilih pengaju"),
-  tanggal_pengajuan: z.date(),
-  tingkat_prioritas: z.string().default("Sedang"),
-  status_doa: z.string().default("AKTIF"),
-  tanggal_terjawab: z.date().optional(),
-  kesaksian_jawaban_doa: z.string().optional(),
+  judulPokokDoa: z.string().min(3, "Judul wajib diisi"),
+  kategoriDoa: z.string().min(1, "Pilih kategori"),
+  deskripsiDoa: z.string().min(10, "Deskripsi minimal 10 karakter"),
+  pengajuDoa: z.string().min(1, "Pilih pengaju"),
+  tanggalPengajuan: z.date(),
+  tingkatPrioritas: z.string().default("Sedang"),
+  statusDoa: z.string().default("AKTIF"),
+  tanggalTerjawab: z.date().optional(),
+  kesaksianJawabanDoa: z.string().optional(),
   
   // TTS
-  tts_status: z.boolean().default(true),
-  tts_bahasa: z.string().default("id-ID"),
-  tts_kecepatan_baca: z.string().default("1"),
+  ttsStatus: z.boolean().default(true),
+  ttsBahasa: z.string().default("id-ID"),
+  ttsKecepatanBaca: z.string().default("1"),
   
   // Meta
-  status_tampil: z.string().default("PUBLIK"),
-  catatan_doa: z.string().optional(),
+  statusTampil: z.string().default("PUBLIK"),
+  catatanDoa: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 interface PokokDoa extends FormValues { id: string; }
 
-// --- Mock Data ---
-const MOCK_DATA: PokokDoa[] = [
-  { 
-    id: "1", judul_pokok_doa: "Kesembuhan Ibu Ani", kategori_doa: "Keluarga", 
-    deskripsi_doa: "Mohon dukungan doa untuk Ibu Ani yang sedang dirawat di RS karena demam berdarah.", 
-    pengaju_doa: "Jemaat", tanggal_pengajuan: new Date("2023-11-25"), tingkat_prioritas: "Tinggi", 
-    status_doa: "AKTIF", tts_status: true, tts_bahasa: "id-ID", tts_kecepatan_baca: "1", 
-    status_tampil: "PUBLIK", catatan_doa: "" 
-  },
-  { 
-    id: "2", judul_pokok_doa: "Persiapan Natal", kategori_doa: "Gereja", 
-    deskripsi_doa: "Berdoa untuk panitia natal agar diberi hikmat dalam persiapan acara bulan depan.", 
-    pengaju_doa: "Pendeta", tanggal_pengajuan: new Date("2023-11-20"), tingkat_prioritas: "Sedang", 
-    status_doa: "AKTIF", tts_status: true, tts_bahasa: "id-ID", tts_kecepatan_baca: "1", 
-    status_tampil: "PUBLIK", catatan_doa: "" 
-  },
-];
-
 const KATEGORI_DOA = ["Pribadi", "Keluarga", "Gereja", "Bangsa", "Misi", "Sakit Penyakit"];
 
 const PokokDoaPage = () => {
-  const [data, setData] = useState<PokokDoa[]>(MOCK_DATA);
+  const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Fetch Data
+  const { data: listDoa, isLoading } = useQuery({
+    queryKey: ['pokok-doa'],
+    queryFn: async () => {
+      const response = await apiClient.get<PokokDoa[]>('/doa');
+      return response as unknown as PokokDoa[];
+    }
+  });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      judul_pokok_doa: "", kategori_doa: "", deskripsi_doa: "", pengaju_doa: "Jemaat",
-      tanggal_pengajuan: new Date(), tingkat_prioritas: "Sedang", status_doa: "AKTIF",
-      tts_status: true, tts_bahasa: "id-ID", tts_kecepatan_baca: "1",
-      status_tampil: "PUBLIK", catatan_doa: ""
+      judulPokokDoa: "", kategoriDoa: "", deskripsiDoa: "", pengajuDoa: "Jemaat",
+      tanggalPengajuan: new Date(), tingkatPrioritas: "Sedang", statusDoa: "AKTIF",
+      ttsStatus: true, ttsBahasa: "id-ID", ttsKecepatanBaca: "1",
+      statusTampil: "PUBLIK", catatanDoa: ""
     },
+  });
+
+  // Mutations
+  const mutation = useMutation({
+    mutationFn: async (values: FormValues) => {
+      const payload = {
+        ...values,
+        tanggalPengajuan: values.tanggalPengajuan.toISOString(),
+        tanggalTerjawab: values.tanggalTerjawab?.toISOString(),
+      };
+      if (editingId) {
+        return apiClient.patch(`/doa/${editingId}`, payload);
+      }
+      return apiClient.post('/doa', payload);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pokok-doa'] });
+      toast.success(editingId ? "Pokok doa diperbarui" : "Pokok doa ditambahkan");
+      setIsDialogOpen(false);
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiClient.delete(`/doa/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pokok-doa'] });
+      toast.success("Pokok doa dihapus");
+    }
   });
 
   const handleAddNew = () => {
     setEditingId(null);
     form.reset({
-      judul_pokok_doa: "", kategori_doa: "", deskripsi_doa: "", pengaju_doa: "Jemaat",
-      tanggal_pengajuan: new Date(), tingkat_prioritas: "Sedang", status_doa: "AKTIF",
-      tts_status: true, tts_bahasa: "id-ID", tts_kecepatan_baca: "1",
-      status_tampil: "PUBLIK", catatan_doa: ""
+      judulPokokDoa: "", kategoriDoa: "", deskripsiDoa: "", pengajuDoa: "Jemaat",
+      tanggalPengajuan: new Date(), tingkatPrioritas: "Sedang", statusDoa: "AKTIF",
+      ttsStatus: true, ttsBahasa: "id-ID", ttsKecepatanBaca: "1",
+      statusTampil: "PUBLIK", catatanDoa: ""
     });
     setIsDialogOpen(true);
   };
 
   const handleEdit = (item: PokokDoa) => {
     setEditingId(item.id);
-    form.reset({ ...item });
+    form.reset({ 
+      ...item,
+      tanggalPengajuan: new Date(item.tanggalPengajuan),
+      tanggalTerjawab: item.tanggalTerjawab ? new Date(item.tanggalTerjawab) : undefined
+    });
     setIsDialogOpen(true);
   };
 
   const handleDelete = (id: string) => {
-    setData((prev) => prev.filter((item) => item.id !== id));
-    toast.success("Pokok doa dihapus");
+    deleteMutation.mutate(id);
   };
 
   const onSubmit = (values: FormValues) => {
-    if (editingId) {
-      setData((prev) => prev.map((item) => item.id === editingId ? { ...values, id: editingId } : item));
-      toast.success("Pokok doa diperbarui");
-    } else {
-      setData((prev) => [{ ...values, id: Math.random().toString(36).substr(2, 9) }, ...prev]);
-      toast.success("Pokok doa ditambahkan");
-    }
-    setIsDialogOpen(false);
+    mutation.mutate(values);
   };
 
   return (
@@ -145,27 +162,31 @@ const PokokDoaPage = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((item) => (
+            {isLoading ? (
+               <TableRow><TableCell colSpan={6} className="h-24 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto" /></TableCell></TableRow>
+            ) : listDoa?.length === 0 ? (
+               <TableRow><TableCell colSpan={6} className="h-24 text-center text-muted-foreground">Tidak ada data.</TableCell></TableRow>
+            ) : listDoa?.map((item) => (
               <TableRow key={item.id}>
                 <TableCell>
-                  <div className="font-medium">{item.judul_pokok_doa}</div>
+                  <div className="font-medium">{item.judulPokokDoa}</div>
                   <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                    <CalendarIcon className="h-3 w-3" /> {format(item.tanggal_pengajuan, "dd MMM yyyy", { locale: localeId })}
+                    <CalendarIcon className="h-3 w-3" /> {format(new Date(item.tanggalPengajuan), "dd MMM yyyy", { locale: localeId })}
                   </div>
                 </TableCell>
-                <TableCell><Badge variant="outline">{item.kategori_doa}</Badge></TableCell>
-                <TableCell>{item.pengaju_doa}</TableCell>
+                <TableCell><Badge variant="outline">{item.kategoriDoa}</Badge></TableCell>
+                <TableCell>{item.pengajuDoa}</TableCell>
                 <TableCell>
-                  <Badge variant={item.status_doa === "AKTIF" ? "default" : item.status_doa === "TERJAWAB" ? "secondary" : "destructive"}>
-                    {item.status_doa}
+                  <Badge variant={item.statusDoa === "AKTIF" ? "default" : item.statusDoa === "TERJAWAB" ? "secondary" : "destructive"}>
+                    {item.statusDoa}
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  {item.tts_status ? (
+                  {item.ttsStatus ? (
                     <TextToSpeechPlayer 
-                      text={`Pokok doa: ${item.judul_pokok_doa}. ${item.deskripsi_doa}`} 
-                      rate={parseFloat(item.tts_kecepatan_baca)}
-                      lang={item.tts_bahasa}
+                      text={`Pokok doa: ${item.judulPokokDoa}. ${item.deskripsiDoa}`} 
+                      rate={parseFloat(item.ttsKecepatanBaca)}
+                      lang={item.ttsBahasa}
                     />
                   ) : <span className="text-muted-foreground text-xs">-</span>}
                 </TableCell>
@@ -188,28 +209,28 @@ const PokokDoaPage = () => {
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField control={form.control} name="judul_pokok_doa" render={({ field }) => (
+              <FormField control={form.control} name="judulPokokDoa" render={({ field }) => (
                 <FormItem><FormLabel>Judul Pokok Doa</FormLabel><FormControl><Input placeholder="Topik doa..." {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               
               <div className="grid grid-cols-2 gap-4">
-                <FormField control={form.control} name="kategori_doa" render={({ field }) => (
-                  <FormItem><FormLabel>Kategori</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Pilih" /></SelectTrigger></FormControl><SelectContent>{KATEGORI_DOA.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                <FormField control={form.control} name="kategoriDoa" render={({ field }) => (
+                  <FormItem><FormLabel>Kategori</FormLabel><Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Pilih" /></SelectTrigger></FormControl><SelectContent>{KATEGORI_DOA.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                 )} />
-                <FormField control={form.control} name="tingkat_prioritas" render={({ field }) => (
-                  <FormItem><FormLabel>Prioritas</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Rendah">Rendah</SelectItem><SelectItem value="Sedang">Sedang</SelectItem><SelectItem value="Tinggi">Tinggi</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                <FormField control={form.control} name="tingkatPrioritas" render={({ field }) => (
+                  <FormItem><FormLabel>Prioritas</FormLabel><Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Rendah">Rendah</SelectItem><SelectItem value="Sedang">Sedang</SelectItem><SelectItem value="Tinggi">Tinggi</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                 )} />
               </div>
 
-              <FormField control={form.control} name="deskripsi_doa" render={({ field }) => (
+              <FormField control={form.control} name="deskripsiDoa" render={({ field }) => (
                 <FormItem><FormLabel>Deskripsi Doa</FormLabel><FormControl><Textarea className="h-24" placeholder="Detail permohonan doa..." {...field} /></FormControl><FormMessage /></FormItem>
               )} />
 
               <div className="grid grid-cols-2 gap-4">
-                 <FormField control={form.control} name="pengaju_doa" render={({ field }) => (
-                   <FormItem><FormLabel>Pengaju</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Jemaat">Jemaat</SelectItem><SelectItem value="Pendeta">Pendeta</SelectItem><SelectItem value="Anonim">Anonim</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                 <FormField control={form.control} name="pengajuDoa" render={({ field }) => (
+                   <FormItem><FormLabel>Pengaju</FormLabel><Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Jemaat">Jemaat</SelectItem><SelectItem value="Pendeta">Pendeta</SelectItem><SelectItem value="Anonim">Anonim</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                  )} />
-                 <FormField control={form.control} name="tanggal_pengajuan" render={({ field }) => (
+                 <FormField control={form.control} name="tanggalPengajuan" render={({ field }) => (
                     <FormItem className="flex flex-col"><FormLabel>Tanggal</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP", { locale: localeId }) : <span>Pilih tanggal</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>
                   )} />
               </div>
@@ -217,38 +238,38 @@ const PokokDoaPage = () => {
               <div className="bg-muted/30 p-4 rounded-lg border space-y-4">
                 <div className="flex items-center justify-between">
                    <div className="flex items-center gap-2"><Mic className="h-4 w-4" /> <span className="font-medium text-sm">Pengaturan Audio (TTS)</span></div>
-                   <FormField control={form.control} name="tts_status" render={({ field }) => (
+                   <FormField control={form.control} name="ttsStatus" render={({ field }) => (
                       <FormItem><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
                     )} />
                 </div>
-                {form.watch("tts_status") && (
+                {form.watch("ttsStatus") && (
                    <div className="flex items-center gap-4">
-                      <FormField control={form.control} name="tts_kecepatan_baca" render={({ field }) => (
-                        <FormItem className="flex-1"><FormLabel className="text-xs">Kecepatan</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="0.8">Lambat</SelectItem><SelectItem value="1">Normal</SelectItem><SelectItem value="1.2">Cepat</SelectItem></SelectContent></Select></FormItem>
+                      <FormField control={form.control} name="ttsKecepatanBaca" render={({ field }) => (
+                        <FormItem className="flex-1"><FormLabel className="text-xs">Kecepatan</FormLabel><Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="0.8">Lambat</SelectItem><SelectItem value="1">Normal</SelectItem><SelectItem value="1.2">Cepat</SelectItem></SelectContent></Select></FormItem>
                       )} />
                       <div className="flex-1 pt-4">
-                         <TextToSpeechPlayer text={form.watch("deskripsi_doa") || "Tes audio"} rate={parseFloat(form.watch("tts_kecepatan_baca"))} />
+                         <TextToSpeechPlayer text={form.watch("deskripsiDoa") || "Tes audio"} rate={parseFloat(form.watch("ttsKecepatanBaca"))} />
                       </div>
                    </div>
                 )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <FormField control={form.control} name="status_doa" render={({ field }) => (
-                  <FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="AKTIF">Aktif</SelectItem><SelectItem value="TERJAWAB">Terjawab</SelectItem><SelectItem value="DITUTUP">Ditutup</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                <FormField control={form.control} name="statusDoa" render={({ field }) => (
+                  <FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="AKTIF">Aktif</SelectItem><SelectItem value="TERJAWAB">Terjawab</SelectItem><SelectItem value="DITUTUP">Ditutup</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                 )} />
-                <FormField control={form.control} name="status_tampil" render={({ field }) => (
-                  <FormItem><FormLabel>Visibilitas</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="PUBLIK">Publik</SelectItem><SelectItem value="INTERNAL">Internal</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                <FormField control={form.control} name="statusTampil" render={({ field }) => (
+                  <FormItem><FormLabel>Visibilitas</FormLabel><Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="PUBLIK">Publik</SelectItem><SelectItem value="INTERNAL">Internal</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                 )} />
               </div>
 
-              {form.watch("status_doa") === "TERJAWAB" && (
-                 <FormField control={form.control} name="kesaksian_jawaban_doa" render={({ field }) => (
+              {form.watch("statusDoa") === "TERJAWAB" && (
+                 <FormField control={form.control} name="kesaksianJawabanDoa" render={({ field }) => (
                     <FormItem><FormLabel>Kesaksian Jawaban Doa</FormLabel><FormControl><Textarea className="h-20" placeholder="Ceritakan bagaimana Tuhan menjawab..." {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
               )}
 
-              <DialogFooter><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Batal</Button><Button type="submit">Simpan</Button></DialogFooter>
+              <DialogFooter><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Batal</Button><Button type="submit" disabled={mutation.isPending}>{mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Simpan</Button></DialogFooter>
             </form>
           </Form>
         </DialogContent>

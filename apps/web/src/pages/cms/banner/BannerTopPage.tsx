@@ -4,8 +4,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
-import { CalendarIcon, Edit, Plus, Trash2, Search } from "lucide-react";
+import { CalendarIcon, Edit, Plus, Trash2, Search, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { PageHeader } from "@/components/common/PageHeader";
 import { ImageUpload } from "@/components/common/ImageUpload";
@@ -51,11 +52,12 @@ import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { cn } from "@/lib/utils";
+import { apiClient } from "@/services/api-client";
 
 // --- Types & Schema ---
 
 const formSchema = z.object({
-  image: z.string().min(1, { message: "Gambar wajib diupload" }),
+  imageUrl: z.string().min(1, { message: "Gambar wajib diupload" }),
   kategori: z.string().min(1, { message: "Kategori wajib dipilih" }),
   title: z.string().min(3, { message: "Judul minimal 3 karakter" }),
   tanggal: z.date({ required_error: "Tanggal wajib diisi" }),
@@ -63,39 +65,33 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-interface Banner extends FormValues {
+interface Banner {
   id: string;
+  title: string;
+  imageUrl: string;
+  kategori: string;
+  tanggal: string;
+  position: string;
 }
-
-// --- Mock Data ---
-
-const MOCK_DATA: Banner[] = [
-  {
-    id: "1",
-    title: "Ibadah Raya Spesial Natal",
-    kategori: "Event",
-    tanggal: new Date(),
-    image: "https://images.unsplash.com/photo-1512389142860-9c449e58a543?w=800&q=80",
-  },
-  {
-    id: "2",
-    title: "Renungan: Hidup yang Berbuah",
-    kategori: "Artikel",
-    tanggal: new Date(Date.now() - 86400000), // Kemarin
-    image: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=800&q=80",
-  },
-];
 
 const KATEGORI_OPTIONS = ["Event", "Artikel", "Pengumuman", "Renungan"];
 
 // --- Main Component ---
 
 const BannerTopPage = () => {
-  // State
-  const [data, setData] = useState<Banner[]>(MOCK_DATA);
+  const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Fetch Data
+  const { data: banners, isLoading } = useQuery({
+    queryKey: ['banners', 'TOP'],
+    queryFn: async () => {
+      const response = await apiClient.get<Banner[]>('/banners?position=TOP');
+      return response as unknown as Banner[];
+    }
+  });
 
   // Form Setup
   const form = useForm<FormValues>({
@@ -103,9 +99,40 @@ const BannerTopPage = () => {
     defaultValues: {
       title: "",
       kategori: "",
-      image: "",
+      imageUrl: "",
       tanggal: new Date(),
     },
+  });
+
+  // Mutations
+  const mutation = useMutation({
+    mutationFn: async (values: FormValues) => {
+      const payload = {
+        ...values,
+        position: 'TOP',
+        tanggal: values.tanggal.toISOString(),
+      };
+      if (editingId) {
+        return apiClient.patch(`/banners/${editingId}`, payload);
+      }
+      return apiClient.post('/banners', payload);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['banners', 'TOP'] });
+      toast.success(editingId ? "Banner berhasil diperbarui" : "Banner baru berhasil ditambahkan");
+      setIsDialogOpen(false);
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Terjadi kesalahan");
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiClient.delete(`/banners/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['banners', 'TOP'] });
+      toast.success("Banner berhasil dihapus");
+    }
   });
 
   // Handlers
@@ -114,7 +141,7 @@ const BannerTopPage = () => {
     form.reset({
       title: "",
       kategori: "",
-      image: "",
+      imageUrl: "",
       tanggal: new Date(),
     });
     setIsDialogOpen(true);
@@ -125,42 +152,24 @@ const BannerTopPage = () => {
     form.reset({
       title: item.title,
       kategori: item.kategori,
-      image: item.image,
-      tanggal: item.tanggal,
+      imageUrl: item.imageUrl,
+      tanggal: new Date(item.tanggal),
     });
     setIsDialogOpen(true);
   };
 
   const handleDelete = (id: string) => {
-    setData((prev) => prev.filter((item) => item.id !== id));
-    toast.success("Banner berhasil dihapus");
+    deleteMutation.mutate(id);
   };
 
   const onSubmit = (values: FormValues) => {
-    if (editingId) {
-      // Update
-      setData((prev) =>
-        prev.map((item) =>
-          item.id === editingId ? { ...values, id: editingId } : item
-        )
-      );
-      toast.success("Banner berhasil diperbarui");
-    } else {
-      // Create
-      const newBanner: Banner = {
-        ...values,
-        id: Math.random().toString(36).substr(2, 9),
-      };
-      setData((prev) => [newBanner, ...prev]);
-      toast.success("Banner baru berhasil ditambahkan");
-    }
-    setIsDialogOpen(false);
+    mutation.mutate(values);
   };
 
   // Filter Data
-  const filteredData = data.filter((item) =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredData = banners?.filter((item) =>
+    item.title?.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
 
   return (
     <div className="space-y-6">
@@ -199,7 +208,16 @@ const BannerTopPage = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredData.length === 0 ? (
+            {isLoading ? (
+               <TableRow>
+                 <TableCell colSpan={5} className="h-24 text-center">
+                   <div className="flex justify-center items-center gap-2">
+                     <Loader2 className="h-4 w-4 animate-spin" />
+                     Memuat data...
+                   </div>
+                 </TableCell>
+               </TableRow>
+            ) : filteredData.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                   Tidak ada data banner ditemukan.
@@ -211,7 +229,7 @@ const BannerTopPage = () => {
                   <TableCell>
                     <div className="w-32 h-16 rounded-md overflow-hidden bg-muted">
                       <img
-                        src={item.image}
+                        src={item.imageUrl}
                         alt={item.title}
                         className="w-full h-full object-cover"
                       />
@@ -222,7 +240,7 @@ const BannerTopPage = () => {
                     <Badge variant="secondary">{item.kategori}</Badge>
                   </TableCell>
                   <TableCell>
-                    {format(item.tanggal, "dd MMMM yyyy", { locale: localeId })}
+                    {item.tanggal ? format(new Date(item.tanggal), "dd MMMM yyyy", { locale: localeId }) : "-"}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
@@ -270,7 +288,7 @@ const BannerTopPage = () => {
               {/* Image Upload Field */}
               <FormField
                 control={form.control}
-                name="image"
+                name="imageUrl"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Gambar Banner</FormLabel>
@@ -379,7 +397,8 @@ const BannerTopPage = () => {
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Batal
                 </Button>
-                <Button type="submit">
+                <Button type="submit" disabled={mutation.isPending}>
+                  {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {editingId ? "Simpan Perubahan" : "Buat Banner"}
                 </Button>
               </DialogFooter>
