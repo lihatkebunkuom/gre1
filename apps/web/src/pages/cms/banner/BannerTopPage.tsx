@@ -12,6 +12,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { ImageUpload } from "@/components/common/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -58,8 +59,10 @@ import { apiClient } from "@/services/api-client";
 
 const formSchema = z.object({
   imageUrl: z.string().min(1, { message: "Gambar wajib diupload" }),
+  type: z.enum(["BANNER", "ARTIKEL"], { required_error: "Tipe wajib dipilih" }),
   kategori: z.string().min(1, { message: "Kategori wajib dipilih" }),
   title: z.string().min(3, { message: "Judul minimal 3 karakter" }),
+  description: z.string().optional(),
   tanggal: z.date({ required_error: "Tanggal wajib diisi" }),
 });
 
@@ -68,12 +71,18 @@ type FormValues = z.infer<typeof formSchema>;
 interface Banner {
   id: string;
   title: string;
+  description?: string;
   imageUrl: string;
+  type?: 'BANNER' | 'ARTIKEL';
   kategori: string;
   tanggal: string;
   position: string;
 }
 
+const TYPE_OPTIONS = [
+  { label: "Banner", value: "BANNER" },
+  { label: "Artikel", value: "ARTIKEL" },
+];
 const KATEGORI_OPTIONS = ["Event", "Artikel", "Pengumuman", "Renungan"];
 
 // --- Main Component ---
@@ -98,6 +107,8 @@ const BannerTopPage = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
+      description: "",
+      type: "BANNER",
       kategori: "",
       imageUrl: "",
       tanggal: new Date(),
@@ -108,7 +119,11 @@ const BannerTopPage = () => {
   const mutation = useMutation({
     mutationFn: async (values: FormValues) => {
       const payload = {
-        ...values,
+        title: values.title,
+        description: values.description,
+        imageUrl: values.imageUrl,
+        type: values.type,
+        kategori: values.kategori,
         position: 'TOP',
         tanggal: values.tanggal.toISOString(),
       };
@@ -140,6 +155,8 @@ const BannerTopPage = () => {
     setEditingId(null);
     form.reset({
       title: "",
+      description: "",
+      type: "BANNER",
       kategori: "",
       imageUrl: "",
       tanggal: new Date(),
@@ -151,6 +168,8 @@ const BannerTopPage = () => {
     setEditingId(item.id);
     form.reset({
       title: item.title,
+      description: item.description || "",
+      type: item.type || "BANNER",
       kategori: item.kategori,
       imageUrl: item.imageUrl,
       tanggal: new Date(item.tanggal),
@@ -202,6 +221,7 @@ const BannerTopPage = () => {
             <TableRow>
               <TableHead className="w-[180px]">Image</TableHead>
               <TableHead>Judul</TableHead>
+              <TableHead>Tipe</TableHead>
               <TableHead>Kategori</TableHead>
               <TableHead>Tanggal</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
@@ -236,6 +256,9 @@ const BannerTopPage = () => {
                     </div>
                   </TableCell>
                   <TableCell className="font-medium">{item.title}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{item.type || 'BANNER'}</Badge>
+                  </TableCell>
                   <TableCell>
                     <Badge variant="secondary">{item.kategori}</Badge>
                   </TableCell>
@@ -313,6 +336,55 @@ const BannerTopPage = () => {
                     <FormControl>
                       <Input placeholder="Masukkan judul banner..." {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Description Field */}
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Deskripsi</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Masukkan deskripsi banner atau artikel..." 
+                        className="resize-none"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Type Field */}
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipe</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih Tipe" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {TYPE_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

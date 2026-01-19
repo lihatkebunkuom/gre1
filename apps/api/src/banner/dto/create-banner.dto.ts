@@ -9,16 +9,31 @@ export enum BannerPosition {
   BOTTOM = 'BOTTOM'
 }
 
+export enum BannerType {
+  BANNER = 'BANNER',
+  ARTIKEL = 'ARTIKEL'
+}
+
 export class CreateBannerDto {
   @ApiPropertyOptional({ example: 'Ibadah Raya Spesial Natal' })
   @IsString()
   @IsOptional()
   title?: string;
 
+  @ApiPropertyOptional({ example: 'Deskripsi lengkap banner...' })
+  @IsString()
+  @IsOptional()
+  description?: string;
+
   @ApiProperty({ example: 'https://images.unsplash.com/photo-1512389142860-9c449e58a543' })
   @IsString()
   @IsNotEmpty()
   imageUrl: string;
+
+  @ApiPropertyOptional({ enum: BannerType, example: 'BANNER', default: 'BANNER' })
+  @IsEnum(BannerType)
+  @IsOptional()
+  type?: BannerType;
 
   @ApiPropertyOptional({ example: 'Event' })
   @IsString()

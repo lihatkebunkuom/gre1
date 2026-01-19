@@ -10,7 +10,13 @@ export class BannerService {
   async create(createBannerDto: CreateBannerDto) {
     return this.prisma.banner.create({
       data: {
-        ...createBannerDto,
+        title: createBannerDto.title,
+        description: createBannerDto.description,
+        imageUrl: createBannerDto.imageUrl,
+        type: createBannerDto.type,
+        kategori: createBannerDto.kategori,
+        position: createBannerDto.position,
+        isActive: createBannerDto.isActive ?? true,
         tanggal: createBannerDto.tanggal ? new Date(createBannerDto.tanggal) : null,
       },
     });

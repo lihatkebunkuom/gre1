@@ -18,6 +18,12 @@ import { KalenderEventModule } from './kalender-event/kalender-event.module';
 import { JadwalIbadahModule } from './jadwal-ibadah/jadwal-ibadah.module';
 import { KebaktianMingguModule } from './kebaktian-minggu/kebaktian-minggu.module';
 import { AbsensiKehadiranModule } from './absensi-kehadiran/absensi-kehadiran.module';
+import { PenugasanModule } from './penugasan/penugasan.module';
+import { RenunganModule } from './renungan/renungan.module';
+import { ArtikelRenunganModule } from './artikel-renungan/artikel-renungan.module';
+import { BeritaKomselModule } from './berita-komsel/berita-komsel.module';
+import { BuletinModule } from './buletin/buletin.module';
+import { MediaGaleriModule } from './media-galeri/media-galeri.module';
 
 @Module({
   imports: [
@@ -37,7 +43,13 @@ import { AbsensiKehadiranModule } from './absensi-kehadiran/absensi-kehadiran.mo
     KalenderEventModule,
     JadwalIbadahModule,
     KebaktianMingguModule,
-    AbsensiKehadiranModule
+    AbsensiKehadiranModule,
+    PenugasanModule,
+    RenunganModule,
+    ArtikelRenunganModule,
+    BeritaKomselModule,
+    BuletinModule,
+    MediaGaleriModule
   ],
   controllers: [AppController],
   providers: [AppService],

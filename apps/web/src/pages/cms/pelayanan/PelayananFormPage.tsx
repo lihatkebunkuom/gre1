@@ -76,6 +76,7 @@ const PelayananFormPage = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pelayanan'] });
+      queryClient.invalidateQueries({ queryKey: ['pelayanan-list'] });
       toast.success(isEdit ? "Data pelayanan diperbarui" : "Pelayanan baru berhasil ditambahkan");
       navigate("/pelayan");
     },
@@ -241,8 +242,15 @@ const PelayananFormPage = () => {
                   <FormField control={form.control} name="status_pelayanan" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Status Unit</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                        <FormControl><SelectTrigger className="h-11"><SelectValue placeholder="Pilih Status" /></SelectTrigger></FormControl>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        value={field.value || "AKTIF"}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="h-11">
+                            <SelectValue placeholder="Pilih Status" />
+                          </SelectTrigger>
+                        </FormControl>
                         <SelectContent>
                           <SelectItem value="AKTIF">Aktif</SelectItem>
                           <SelectItem value="NON_AKTIF">Non-Aktif</SelectItem>

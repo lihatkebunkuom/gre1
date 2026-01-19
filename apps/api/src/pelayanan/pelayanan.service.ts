@@ -23,8 +23,9 @@ export class PelayananService {
   }
 
   async findAll(search?: string) {
+    let items;
     if (search) {
-      return this.prisma.pelayanan.findMany({
+      items = await this.prisma.pelayanan.findMany({
         where: {
           OR: [
             { namaPelayanan: { contains: search, mode: 'insensitive' } },
@@ -32,10 +33,12 @@ export class PelayananService {
         },
         orderBy: { createdAt: 'desc' },
       });
+    } else {
+      items = await this.prisma.pelayanan.findMany({
+        orderBy: { createdAt: 'desc' },
+      });
     }
-    return this.prisma.pelayanan.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
+    return items.map(item => this.mapToDto(item));
   }
 
   async findOne(id: string) {
