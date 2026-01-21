@@ -24,6 +24,10 @@ import { ArtikelRenunganModule } from './artikel-renungan/artikel-renungan.modul
 import { BeritaKomselModule } from './berita-komsel/berita-komsel.module';
 import { BuletinModule } from './buletin/buletin.module';
 import { MediaGaleriModule } from './media-galeri/media-galeri.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { KomisiModule } from './komisi/komisi.module';
+import { PepanthanModule } from './pepanthan/pepanthan.module';
+import { IbadahUmumModule } from './ibadah-umum/ibadah-umum.module';
 
 @Module({
   imports: [
@@ -49,7 +53,11 @@ import { MediaGaleriModule } from './media-galeri/media-galeri.module';
     ArtikelRenunganModule,
     BeritaKomselModule,
     BuletinModule,
-    MediaGaleriModule
+    MediaGaleriModule,
+    DashboardModule,
+    KomisiModule,
+    PepanthanModule,
+    IbadahUmumModule
   ],
   controllers: [AppController],
   providers: [AppService],

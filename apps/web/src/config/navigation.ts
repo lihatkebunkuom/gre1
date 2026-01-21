@@ -15,7 +15,9 @@ import {
   Church,
   Database,
   UserCheck,
-  QrCode
+  QrCode,
+  LayoutGrid,
+  Home
 } from "lucide-react";
 import { UserRole } from "@/types";
 
@@ -89,6 +91,33 @@ export const SIDEBAR_GROUPS: NavGroup[] = [
           { title: "Daftar Pelayan", href: "/pelayan", roles: [] },
           { title: "Tambah Pelayan", href: "/pelayan/create", roles: [] },
           { title: "Penugasan", href: "/pelayan/penugasan", roles: [] },
+        ]
+      },
+      {
+        title: "Komisi",
+        icon: LayoutGrid,
+        roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
+        items: [
+          { title: "Daftar Komisi", href: "/komisi", roles: [] },
+          { title: "Tambah Komisi", href: "/komisi/create", roles: [] },
+        ]
+      },
+      {
+        title: "Pepanthan",
+        icon: Home,
+        roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
+        items: [
+          { title: "Daftar Pepanthan", href: "/pepanthan", roles: [] },
+          { title: "Tambah Pepanthan", href: "/pepanthan/create", roles: [] },
+        ]
+      },
+      {
+        title: "Ibadah Umum",
+        icon: Calendar,
+        roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
+        items: [
+          { title: "Daftar Ibadah Umum", href: "/ibadah-umum", roles: [] },
+          { title: "Tambah Ibadah Umum", href: "/ibadah-umum/create", roles: [] },
         ]
       }
     ]

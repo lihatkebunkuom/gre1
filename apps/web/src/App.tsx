@@ -41,6 +41,12 @@ import DaftarDivisiPage from "./pages/cms/divisi/DaftarDivisiPage";
 import AnggotaTimPage from "./pages/cms/divisi/AnggotaTimPage";
 import ArtikelRenunganPage from "./pages/cms/konten/ArtikelRenunganPage";
 import MediaGaleriPage from "./pages/cms/konten/MediaGaleriPage";
+import KomisiListPage from "./pages/cms/komisi/KomisiListPage";
+import KomisiFormPage from "./pages/cms/komisi/KomisiFormPage";
+import PepanthanListPage from "./pages/cms/pepanthan/PepanthanListPage";
+import PepanthanFormPage from "./pages/cms/pepanthan/PepanthanFormPage";
+import IbadahUmumListPage from "./pages/cms/ibadah-umum/IbadahUmumListPage";
+import IbadahUmumFormPage from "./pages/cms/ibadah-umum/IbadahUmumFormPage";
 
 // Kehadiran Pages
 import QrSessionListPage from "./pages/cms/kehadiran/QrSessionListPage";
@@ -112,6 +118,21 @@ const App = () => (
                 <Route path="/pendeta" element={<DataPendetaPage />} />
                 <Route path="/pendeta/create" element={<PendetaFormPage />} />
                 <Route path="/pendeta/edit/:id" element={<PendetaFormPage />} />
+                
+                {/* Komisi */}
+                <Route path="/komisi" element={<KomisiListPage />} />
+                <Route path="/komisi/create" element={<KomisiFormPage />} />
+                <Route path="/komisi/edit/:id" element={<KomisiFormPage />} />
+                
+                {/* Pepanthan */}
+                <Route path="/pepanthan" element={<PepanthanListPage />} />
+                <Route path="/pepanthan/create" element={<PepanthanFormPage />} />
+                <Route path="/pepanthan/edit/:id" element={<PepanthanFormPage />} />
+                
+                {/* Ibadah Umum */}
+                <Route path="/ibadah-umum" element={<IbadahUmumListPage />} />
+                <Route path="/ibadah-umum/create" element={<IbadahUmumFormPage />} />
+                <Route path="/ibadah-umum/edit/:id" element={<IbadahUmumFormPage />} />
                 
                 {/* Kehadiran */}
                 <Route path="/kehadiran/sesi" element={<QrSessionListPage />} />

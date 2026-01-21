@@ -597,8 +597,304 @@ model Penugasan {
   pelayanan               Pelayanan @relation(fields: [pelayananId], references: [id])
   petugas                 Jemaat    @relation(fields: [petugasId], references: [id])
 
-  createdAt               DateTime  @default(now()) @map("created_at")
-  updatedAt               DateTime  @updatedAt @map("updated_at")
+    createdAt               DateTime  @default(now())  @map("created_at")
 
-  @@map("penugasan")
-}
+    updatedAt               DateTime  @updatedAt @map("updated_at")
+
+  
+
+    @@map("penugasan")
+
+  }
+
+  
+
+  model Komisi {
+
+  
+
+    id          String   @id @default(uuid())
+
+  
+
+    namaKomisi  String   @map("nama_komisi")
+
+  
+
+    keterangan  String?  @db.Text
+
+  
+
+    createdAt   DateTime @default(now()) @map("created_at")
+
+  
+
+    updatedAt   DateTime @updatedAt @map("updated_at")
+
+  
+
+  
+
+  
+
+    @@map("komisi")
+
+  
+
+  }
+
+  
+
+  
+
+  
+
+  model Pepanthan {
+
+  
+
+  
+
+  
+
+    id              String   @id @default(uuid())
+
+  
+
+  
+
+  
+
+    namaPepanthan   String   @map("nama_pepanthan")
+
+  
+
+  
+
+  
+
+    alamat          String?  @db.Text
+
+  
+
+  
+
+  
+
+    keterangan      String?  @db.Text
+
+  
+
+  
+
+  
+
+    createdAt       DateTime @default(now()) @map("created_at")
+
+  
+
+  
+
+  
+
+    updatedAt       DateTime @updatedAt @map("updated_at")
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+    @@map("pepanthan")
+
+  
+
+  
+
+  
+
+  }
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  model IbadahUmum {
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+    id          String   @id @default(uuid())
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+    judul       String?
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+    waktuMulai  String?  @map("waktu_mulai")
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+    keterangan  String?  @db.Text
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+    lokasi      String?
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+    createdAt   DateTime @default(now()) @map("created_at")
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+    updatedAt   DateTime @updatedAt @map("updated_at")
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+    @@map("ibadah_umum")
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  }

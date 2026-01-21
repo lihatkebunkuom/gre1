@@ -1,69 +1,16 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Coins, Calendar, TrendingUp, Bell, ArrowRight, Activity, UserPlus } from "lucide-react";
+import { Users, Coins, Calendar, TrendingUp, Bell, ArrowRight, Activity, UserPlus, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUIStore } from '@/stores/ui-store';
-
-// --- Data Dummy & Config ---
-
-const stats = [
-  {
-    title: "Total Jemaat",
-    value: "1,248",
-    change: "+12% bulan ini",
-    icon: Users,
-    trend: "up",
-    color: "text-blue-500",
-    bg: "bg-blue-50 dark:bg-blue-900/20"
-  },
-  {
-    title: "Persembahan (Bulan Ini)",
-    value: "Rp 145.2 jt",
-    change: "+5% dari target",
-    icon: Coins,
-    trend: "up",
-    color: "text-green-500",
-    bg: "bg-green-50 dark:bg-green-900/20"
-  },
-  {
-    title: "Rata-rata Kehadiran",
-    value: "892",
-    change: "-2% minggu lalu",
-    icon: Activity,
-    trend: "down",
-    color: "text-orange-500",
-    bg: "bg-orange-50 dark:bg-orange-900/20"
-  },
-  {
-    title: "Jemaat Baru",
-    value: "24",
-    change: "Minggu ini",
-    icon: UserPlus,
-    trend: "neutral",
-    color: "text-purple-500",
-    bg: "bg-purple-50 dark:bg-purple-900/20"
-  },
-];
-
-const upcomingServices = [
-  { name: "Ibadah Raya 1", time: "Minggu, 07:00", theme: "Hidup yang Berbuah", speaker: "Pdt. Andi Wijaya" },
-  { name: "Ibadah Raya 2", time: "Minggu, 10:00", theme: "Hidup yang Berbuah", speaker: "Pdt. Andi Wijaya" },
-  { name: "Ibadah Youth", time: "Sabtu, 18:00", theme: "Generation Z on Fire", speaker: "Ps. Budi Santoso" },
-];
-
-const recentActivities = [
-  { user: "Sekretariat", action: "Menambahkan jadwal ibadah baru", time: "2 jam lalu" },
-  { user: "Bendahara", action: "Menginput laporan persembahan", time: "4 jam lalu" },
-  { user: "Sistem", action: "Backup database otomatis berhasil", time: "6 jam lalu" },
-  { user: "Admin", action: "Memperbarui data jemaat ID-293", time: "1 hari lalu" },
-];
+import { dashboardService, DashboardData } from '@/services/dashboard.service';
 
 // --- ECharts Configurations ---
 
-const getAttendanceOption = (isDark: boolean) => ({
+const getAttendanceOption = (isDark: boolean, categories: string[] = [], data: number[] = []) => ({
   tooltip: {
     trigger: 'axis',
     backgroundColor: isDark ? '#1f2937' : '#fff',
@@ -74,7 +21,7 @@ const getAttendanceOption = (isDark: boolean) => ({
   xAxis: {
     type: 'category',
     boundaryGap: false,
-    data: ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4', 'Minggu 5'],
+    data: categories.length > 0 ? categories : ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4', 'Minggu 5'],
     axisLine: { lineStyle: { color: isDark ? '#6b7280' : '#9ca3af' } }
   },
   yAxis: {
@@ -99,18 +46,18 @@ const getAttendanceOption = (isDark: boolean) => ({
           ]
         }
       },
-      data: [820, 932, 901, 934, 1290]
+      data: data.length > 0 ? data : [0, 0, 0, 0, 0]
     }
   ]
 });
 
-const getFinanceOption = (isDark: boolean) => ({
+const getFinanceOption = (isDark: boolean, categories: string[] = [], income: number[] = [], expense: number[] = []) => ({
   tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
   legend: { textStyle: { color: isDark ? '#9ca3af' : '#4b5563' }, bottom: 0 },
   grid: { left: '3%', right: '4%', bottom: '10%', top: '10%', containLabel: true },
   xAxis: {
     type: 'category',
-    data: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+    data: categories.length > 0 ? categories : ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
     axisLine: { lineStyle: { color: isDark ? '#6b7280' : '#9ca3af' } }
   },
   yAxis: {
@@ -124,13 +71,13 @@ const getFinanceOption = (isDark: boolean) => ({
       type: 'bar',
       barGap: 0,
       itemStyle: { color: '#10b981', borderRadius: [4, 4, 0, 0] },
-      data: [320, 332, 301, 334, 390, 330]
+      data: income.length > 0 ? income : [0, 0, 0, 0, 0, 0]
     },
     {
       name: 'Pengeluaran',
       type: 'bar',
       itemStyle: { color: '#ef4444', borderRadius: [4, 4, 0, 0] },
-      data: [220, 182, 191, 234, 290, 310]
+      data: expense.length > 0 ? expense : [0, 0, 0, 0, 0, 0]
     }
   ]
 });
@@ -140,6 +87,42 @@ const getFinanceOption = (isDark: boolean) => ({
 const DashboardOverview = () => {
   const { theme } = useUIStore();
   const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const response = await dashboardService.getDashboardData();
+        setData(response);
+      } catch (error) {
+        console.error("Failed to fetch dashboard data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="h-[80vh] flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  const statsConfig = [
+    { icon: Users, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20" },
+    { icon: Coins, color: "text-green-500", bg: "bg-green-50 dark:bg-green-900/20" },
+    { icon: Activity, color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-900/20" },
+    { icon: UserPlus, color: "text-purple-500", bg: "bg-purple-50 dark:bg-purple-900/20" },
+  ];
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -154,25 +137,28 @@ const DashboardOverview = () => {
 
       {/* 1. Stats Cards Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
-          <Card key={index} className="border-l-4" style={{ borderLeftColor: stat.trend === 'up' ? '#10b981' : stat.trend === 'down' ? '#ef4444' : '#a855f7' }}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between space-y-0 pb-2">
-                <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                <div className={`p-2 rounded-full ${stat.bg}`}>
-                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
+        {data.stats.map((stat, index) => {
+          const config = statsConfig[index] || statsConfig[0];
+          return (
+            <Card key={index} className="border-l-4" style={{ borderLeftColor: stat.trend === 'up' ? '#10b981' : stat.trend === 'down' ? '#ef4444' : '#a855f7' }}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between space-y-0 pb-2">
+                  <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+                  <div className={`p-2 rounded-full ${config.bg}`}>
+                    <config.icon className={`h-4 w-4 ${config.color}`} />
+                  </div>
                 </div>
-              </div>
-              <div className="flex flex-col gap-1 mt-2">
-                <span className="text-2xl font-bold">{stat.value}</span>
-                <span className={`text-xs ${stat.trend === 'up' ? 'text-green-600' : stat.trend === 'down' ? 'text-red-600' : 'text-muted-foreground'} flex items-center gap-1`}>
-                  {stat.trend === 'up' && <TrendingUp className="h-3 w-3" />}
-                  {stat.change}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                <div className="flex flex-col gap-1 mt-2">
+                  <span className="text-2xl font-bold">{stat.value}</span>
+                  <span className={`text-xs ${stat.trend === 'up' ? 'text-green-600' : stat.trend === 'down' ? 'text-red-600' : 'text-muted-foreground'} flex items-center gap-1`}>
+                    {stat.trend === 'up' && <TrendingUp className="h-3 w-3" />}
+                    {stat.change}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* 2. Charts Section */}
@@ -186,7 +172,7 @@ const DashboardOverview = () => {
           </CardHeader>
           <CardContent>
             <ReactECharts 
-              option={getAttendanceOption(isDark)} 
+              option={getAttendanceOption(isDark, data.attendanceTrend.categories, data.attendanceTrend.data)} 
               style={{ height: '350px', width: '100%' }} 
               opts={{ renderer: 'svg' }}
             />
@@ -201,7 +187,7 @@ const DashboardOverview = () => {
           </CardHeader>
           <CardContent>
             <ReactECharts 
-              option={getFinanceOption(isDark)} 
+              option={getFinanceOption(isDark, data.financeTrend.categories, data.financeTrend.income, data.financeTrend.expense)} 
               style={{ height: '350px', width: '100%' }}
               opts={{ renderer: 'svg' }}
             />
@@ -223,7 +209,7 @@ const DashboardOverview = () => {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {upcomingServices.map((service, i) => (
+              {data.upcomingServices.map((service, i) => (
                 <div key={i} className="flex flex-col gap-3 p-4 border rounded-lg bg-muted/20 hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-2 text-primary font-semibold">
                     <Calendar className="h-4 w-4" />
@@ -253,7 +239,7 @@ const DashboardOverview = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {recentActivities.map((act, i) => (
+              {data.recentActivities.map((act, i) => (
                 <div key={i} className="flex gap-4">
                   <div className="relative">
                     <span className="absolute left-[9px] top-8 h-full w-[2px] bg-muted last:hidden"></span>
