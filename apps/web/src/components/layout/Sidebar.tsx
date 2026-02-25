@@ -29,6 +29,8 @@ export const Sidebar = ({ className }: SidebarProps) => {
   const { sidebarCollapsed, toggleSidebar, setSidebarCollapsed } = useUIStore();
   const { user, logout } = useAuthStore();
   
+  const [openMenuTitle, setOpenMenuTitle] = useState<string | null>(null);
+
   const userRole = user?.role || 'JEMAAT';
 
   const handleLogout = () => {
@@ -109,6 +111,8 @@ export const Sidebar = ({ className }: SidebarProps) => {
                     pathname={location.pathname}
                     expandSidebar={() => setSidebarCollapsed(false)}
                     hasAccess={hasAccess}
+                    openMenuTitle={openMenuTitle}
+                    setOpenMenuTitle={setOpenMenuTitle}
                   />
                 ))}
               </div>
@@ -170,20 +174,30 @@ interface SidebarItemProps {
   pathname: string;
   expandSidebar: () => void;
   hasAccess: (roles: UserRole[]) => boolean;
+  openMenuTitle: string | null;
+  setOpenMenuTitle: (title: string | null) => void;
 }
 
-const SidebarItem = ({ item, collapsed, pathname, expandSidebar, hasAccess }: SidebarItemProps) => {
+const SidebarItem = ({ item, collapsed, pathname, expandSidebar, hasAccess, openMenuTitle, setOpenMenuTitle }: SidebarItemProps) => {
   // Cek apakah item ini aktif (atau anaknya aktif)
   const isSelfActive = item.href ? pathname === item.href : false;
   const isChildActive = item.items?.some(sub => pathname === sub.href) || false;
   const isActive = isSelfActive || isChildActive;
   
-  const [isOpen, setIsOpen] = useState(isChildActive);
+  const isOpen = openMenuTitle === item.title;
 
   // Auto open jika child aktif saat render pertama/navigasi
   useEffect(() => {
-    if (isChildActive) setIsOpen(true);
-  }, [pathname, isChildActive]);
+    if (isChildActive) setOpenMenuTitle(item.title);
+  }, [pathname, isChildActive, item.title, setOpenMenuTitle]);
+
+  const handleOpenChange = (open: boolean) => {
+    if (open) {
+      setOpenMenuTitle(item.title);
+    } else if (isOpen) {
+      setOpenMenuTitle(null);
+    }
+  };
 
   // Case 1: Item Tunggal (Link Langsung)
   if (!item.items || item.items.length === 0) {
@@ -253,7 +267,7 @@ const SidebarItem = ({ item, collapsed, pathname, expandSidebar, hasAccess }: Si
   }
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-1">
+    <Collapsible open={isOpen} onOpenChange={handleOpenChange} className="space-y-1">
       <CollapsibleTrigger asChild>
         <Button
           variant="ghost"

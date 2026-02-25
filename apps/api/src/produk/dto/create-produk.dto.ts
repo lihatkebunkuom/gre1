@@ -31,4 +31,14 @@ export class CreateProdukDto {
   @IsString({ each: true })
   @IsOptional()
   images?: string[];
+
+  @ApiPropertyOptional({ example: "08123456789" })
+  @IsString()
+  @IsOptional()
+  noTelp?: string;
+
+  @ApiPropertyOptional({ example: "Budi Santoso" })
+  @IsString()
+  @IsOptional()
+  namaPemilik?: string;
 }

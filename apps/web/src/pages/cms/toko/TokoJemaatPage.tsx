@@ -31,6 +31,8 @@ const formSchema = z.object({
   rating: z.coerce.number().min(1).max(5),
   deskripsi: z.string().min(10, { message: "Deskripsi minimal 10 karakter" }),
   images: z.array(z.string()).default([]),
+  noTelp: z.string().optional(),
+  namaPemilik: z.string().min(1, { message: "Nama Pemilik wajib diisi" }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -61,7 +63,7 @@ const TokoJemaatPage = () => {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { title: "", harga: 0, rating: 5, deskripsi: "", images: [] },
+    defaultValues: { title: "", harga: 0, rating: 5, deskripsi: "", images: [], noTelp: "", namaPemilik: "" },
   });
 
   // Mutations
@@ -92,7 +94,7 @@ const TokoJemaatPage = () => {
 
   const handleAddNew = () => {
     setEditingId(null);
-    form.reset({ title: "", harga: 0, rating: 5, deskripsi: "", images: [] });
+    form.reset({ title: "", harga: 0, rating: 5, deskripsi: "", images: [], noTelp: "", namaPemilik: "" });
     setUploadKey(prev => prev + 1);
     setIsDialogOpen(true);
   };
@@ -174,6 +176,10 @@ const TokoJemaatPage = () => {
                         </div>
                     </div>
                     <p className="text-primary font-bold text-lg mb-3">{formatRupiah(item.harga)}</p>
+                    <div className="mb-3 text-sm text-muted-foreground border-l-2 border-primary pl-2">
+                        <p className="font-medium text-foreground">{item.namaPemilik || "-"}</p>
+                        <p>{item.noTelp || "-"}</p>
+                    </div>
                     <p className="text-sm text-muted-foreground line-clamp-2">{item.deskripsi}</p>
                 </CardContent>
                 <CardFooter className="p-4 bg-muted/20 border-t flex justify-between">
@@ -197,6 +203,14 @@ const TokoJemaatPage = () => {
                   <FormField control={form.control} name="title" render={({ field }) => (
                     <FormItem><FormLabel>Nama Produk</FormLabel><FormControl><Input placeholder="Contoh: Kaos Rohani..." {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField control={form.control} name="namaPemilik" render={({ field }) => (
+                        <FormItem><FormLabel>Nama Pemilik</FormLabel><FormControl><Input placeholder="Budi Santoso" {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="noTelp" render={({ field }) => (
+                        <FormItem><FormLabel>No Telp / WA</FormLabel><FormControl><Input placeholder="0812..." {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                  </div>
                   <div className="grid grid-cols-2 gap-4">
                     <FormField control={form.control} name="harga" render={({ field }) => (
                         <FormItem><FormLabel>Harga (Rp)</FormLabel><FormControl><Input type="number" placeholder="0" {...field} /></FormControl><FormMessage /></FormItem>
