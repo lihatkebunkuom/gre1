@@ -700,31 +700,13 @@ model Penugasan {
 
   
 
-    updatedAt       DateTime @updatedAt @map("updated_at")
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-    @@map("pepanthan")
-
-  
-
-  
-
-  
-
-  }
+        updatedAt       DateTime @updatedAt @map("updated_at")
+    
+        ibadahPepanthan IbadahPepanthan[]
+    
+        @@map("pepanthan")
+    
+      }
 
   
 
@@ -884,20 +866,22 @@ model Penugasan {
 
   
 
-    @@map("ibadah_umum")
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  }
+        @@map("ibadah_umum")
+    
+      }
+    
+      model IbadahPepanthan {
+        id            String    @id @default(uuid())
+        judul         String?
+        waktuMulai    String?   @map("waktu_mulai")
+        keterangan    String?   @db.Text
+        lokasi        String?
+        
+        pepanthanId   String    @map("pepanthan_id")
+        pepanthan     Pepanthan @relation(fields: [pepanthanId], references: [id])
+    
+        createdAt     DateTime  @default(now()) @map("created_at")
+        updatedAt     DateTime  @updatedAt @map("updated_at")
+    
+        @@map("ibadah_pepanthan")
+      }

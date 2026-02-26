@@ -28,6 +28,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { KomisiModule } from './komisi/komisi.module';
 import { PepanthanModule } from './pepanthan/pepanthan.module';
 import { IbadahUmumModule } from './ibadah-umum/ibadah-umum.module';
+import { IbadahPepanthanModule } from './ibadah-pepanthan/ibadah-pepanthan.module';
 
 @Module({
   imports: [
@@ -57,7 +58,8 @@ import { IbadahUmumModule } from './ibadah-umum/ibadah-umum.module';
     DashboardModule,
     KomisiModule,
     PepanthanModule,
-    IbadahUmumModule
+    IbadahUmumModule,
+    IbadahPepanthanModule
   ],
   controllers: [AppController],
   providers: [AppService],

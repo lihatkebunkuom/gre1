@@ -112,6 +112,15 @@ export const SIDEBAR_GROUPS: NavGroup[] = [
         ]
       },
       {
+        title: "Ibadah Pepanthan",
+        icon: Calendar,
+        roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
+        items: [
+          { title: "Daftar Ibadah Pepanthan", href: "/ibadah-pepanthan", roles: [] },
+          { title: "Tambah Ibadah Pepanthan", href: "/ibadah-pepanthan/create", roles: [] },
+        ]
+      },
+      {
         title: "Ibadah Umum",
         icon: Calendar,
         roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],

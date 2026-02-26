@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { KomisiService } from './komisi.service';
 import { CreateKomisiDto } from './dto/create-komisi.dto';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('Komisi')
 @Controller('komisi')
@@ -25,6 +25,7 @@ export class KomisiController {
 
   @Get()
   @ApiOperation({ summary: 'Ambil Semua Data Komisi' })
+  @ApiQuery({ name: 'search', required: false, type: String, description: 'Kata kunci pencarian (opsional)' })
   findAll(@Query('search') search?: string) {
     return this.komisiService.findAll(search);
   }

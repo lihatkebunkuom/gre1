@@ -47,6 +47,8 @@ import PepanthanListPage from "./pages/cms/pepanthan/PepanthanListPage";
 import PepanthanFormPage from "./pages/cms/pepanthan/PepanthanFormPage";
 import IbadahUmumListPage from "./pages/cms/ibadah-umum/IbadahUmumListPage";
 import IbadahUmumFormPage from "./pages/cms/ibadah-umum/IbadahUmumFormPage";
+import IbadahPepanthanListPage from "./pages/cms/ibadah-pepanthan/IbadahPepanthanListPage";
+import IbadahPepanthanFormPage from "./pages/cms/ibadah-pepanthan/IbadahPepanthanFormPage";
 
 // Kehadiran Pages
 import QrSessionListPage from "./pages/cms/kehadiran/QrSessionListPage";
@@ -133,6 +135,11 @@ const App = () => (
                 <Route path="/ibadah-umum" element={<IbadahUmumListPage />} />
                 <Route path="/ibadah-umum/create" element={<IbadahUmumFormPage />} />
                 <Route path="/ibadah-umum/edit/:id" element={<IbadahUmumFormPage />} />
+                
+                {/* Ibadah Pepanthan */}
+                <Route path="/ibadah-pepanthan" element={<IbadahPepanthanListPage />} />
+                <Route path="/ibadah-pepanthan/create" element={<IbadahPepanthanFormPage />} />
+                <Route path="/ibadah-pepanthan/edit/:id" element={<IbadahPepanthanFormPage />} />
                 
                 {/* Kehadiran */}
                 <Route path="/kehadiran/sesi" element={<QrSessionListPage />} />
