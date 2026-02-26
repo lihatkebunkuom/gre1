@@ -104,6 +104,10 @@ const CreateKebaktianMingguPage = () => {
               <Label htmlFor="catatan">Catatan</Label>
               <Input id="catatan" {...register("catatan")} />
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="url">Url (Tautan Video/Streaming)</Label>
+              <Input id="url" type="url" placeholder="https://..." {...register("url")} />
+            </div>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => navigate("/ibadah/kebaktian")}>
                 Batal

@@ -37,4 +37,9 @@ export class CreateKebaktianMingguDto {
   @IsOptional()
   @IsString()
   catatan?: string;
+
+  @ApiPropertyOptional({ example: 'https://youtube.com/live/xxxx' })
+  @IsOptional()
+  @IsString()
+  url?: string;
 }

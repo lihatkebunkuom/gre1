@@ -561,6 +561,7 @@ model KebaktianMinggu {
   liturgos       String
   pembacaWarta   String?  @map("pembaca_warta")
   catatan        String?  @db.Text
+  url            String?
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
