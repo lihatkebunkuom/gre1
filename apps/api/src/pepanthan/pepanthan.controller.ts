@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { PepanthanService } from './pepanthan.service';
 import { CreatePepanthanDto } from './dto/create-pepanthan.dto';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('Pepanthan')
 @Controller('pepanthan')
@@ -25,6 +25,7 @@ export class PepanthanController {
 
   @Get()
   @ApiOperation({ summary: 'Ambil Semua Data Pepanthan' })
+  @ApiQuery({ name: 'search', required: false, type: String, description: 'Kata kunci pencarian (opsional)' })
   findAll(@Query('search') search?: string) {
     return this.pepanthanService.findAll(search);
   }
