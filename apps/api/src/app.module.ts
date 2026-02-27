@@ -29,6 +29,10 @@ import { KomisiModule } from './komisi/komisi.module';
 import { PepanthanModule } from './pepanthan/pepanthan.module';
 import { IbadahUmumModule } from './ibadah-umum/ibadah-umum.module';
 import { IbadahPepanthanModule } from './ibadah-pepanthan/ibadah-pepanthan.module';
+import { IbadahWilayahModule } from './ibadah-wilayah/ibadah-wilayah.module';
+import { IbadahKelompokModule } from './ibadah-kelompok/ibadah-kelompok.module';
+import { IbadahKhususModule } from './ibadah-khusus/ibadah-khusus.module';
+import { PendalamanAlkitabModule } from './pendalaman-alkitab/pendalaman-alkitab.module';
 
 @Module({
   imports: [
@@ -59,7 +63,11 @@ import { IbadahPepanthanModule } from './ibadah-pepanthan/ibadah-pepanthan.modul
     KomisiModule,
     PepanthanModule,
     IbadahUmumModule,
-    IbadahPepanthanModule
+    IbadahPepanthanModule,
+    IbadahWilayahModule,
+    IbadahKelompokModule,
+    IbadahKhususModule,
+    PendalamanAlkitabModule
   ],
   controllers: [AppController],
   providers: [AppService],

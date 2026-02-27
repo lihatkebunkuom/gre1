@@ -1,39 +1,42 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateKelompokDto } from './dto/create-kelompok.dto';
 import { UpdateKelompokDto } from './dto/update-kelompok.dto';
-import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class KelompokService {
   constructor(private prisma: PrismaService) {}
 
-  create(createKelompokDto: CreateKelompokDto) {
+  async create(createKelompokDto: CreateKelompokDto) {
     return this.prisma.kelompok.create({
       data: createKelompokDto,
-    });
-  }
-
-  findAll() {
-    return this.prisma.kelompok.findMany({
       include: { wilayah: true },
     });
   }
 
-  findOne(id: string) {
-    return this.prisma.kelompok.findUnique({
-      where: { id },
-      include: { wilayah: true, jemaats: true },
+  async findAll() {
+    return this.prisma.kelompok.findMany({
+      include: { wilayah: true },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
-  update(id: string, updateKelompokDto: UpdateKelompokDto) {
+  async findOne(id: string) {
+    return this.prisma.kelompok.findUnique({
+      where: { id },
+      include: { wilayah: true },
+    });
+  }
+
+  async update(id: string, updateKelompokDto: UpdateKelompokDto) {
     return this.prisma.kelompok.update({
       where: { id },
       data: updateKelompokDto,
+      include: { wilayah: true },
     });
   }
 
-  remove(id: string) {
+  async remove(id: string) {
     return this.prisma.kelompok.delete({
       where: { id },
     });

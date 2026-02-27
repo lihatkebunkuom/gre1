@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { KelompokService } from './kelompok.service';
 import { CreateKelompokDto } from './dto/create-kelompok.dto';
 import { UpdateKelompokDto } from './dto/update-kelompok.dto';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('Kelompok')
 @Controller('kelompok')
@@ -10,7 +10,8 @@ export class KelompokController {
   constructor(private readonly kelompokService: KelompokService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Tambah kelompok/komsel baru' })
+  @ApiOperation({ summary: 'Tambah kelompok baru' })
+  @ApiResponse({ status: 201, description: 'Kelompok berhasil dibuat.' })
   create(@Body() createKelompokDto: CreateKelompokDto) {
     return this.kelompokService.create(createKelompokDto);
   }
@@ -22,7 +23,7 @@ export class KelompokController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Ambil detail kelompok' })
+  @ApiOperation({ summary: 'Ambil detail kelompok berdasarkan ID' })
   findOne(@Param('id') id: string) {
     return this.kelompokService.findOne(id);
   }

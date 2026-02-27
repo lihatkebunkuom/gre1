@@ -2,33 +2,23 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreateKelompokDto {
-  @ApiPropertyOptional({ example: 'uuid-kelompok-v4', description: 'ID Kelompok (Optional, untuk menghubungkan ke Kelompok yang sudah ada)' })
+  @ApiPropertyOptional({ example: 'uuid-kelompok', description: 'ID Kelompok (Optional, untuk menghubungkan ke Kelompok yang sudah ada)' })
   @IsUUID()
   @IsOptional()
   id?: string;
 
-  @ApiProperty({ example: 'Komsel Efrata 1', description: 'Nama kelompok sel' })
+  @ApiProperty({ example: 'Kelompok Sel A', description: 'Nama kelompok' })
   @IsString()
   @IsNotEmpty()
   nama: string;
 
-  @ApiPropertyOptional({ example: 'Bpk. Yohanes', description: 'Nama ketua/gembala kelompok' })
+  @ApiPropertyOptional({ example: 'Kelompok khusus pemuda', description: 'Keterangan lengkap mengenai kelompok' })
   @IsString()
   @IsOptional()
-  ketua?: string;
+  keteranganKelompok?: string;
 
-  @ApiPropertyOptional({ example: 'Jumat, 19:00 WIB', description: 'Jadwal pertemuan rutin' })
+  @ApiPropertyOptional({ example: 'uuid-wilayah', description: 'ID Wilayah (Optional)' })
   @IsString()
-  @IsOptional()
-  jadwal?: string;
-
-  @ApiPropertyOptional({ example: 'Fokus pemuridan muda mudi', description: 'Catatan tambahan' })
-  @IsString()
-  @IsOptional()
-  catatan?: string;
-
-  @ApiPropertyOptional({ example: 'uuid-wilayah-v4', description: 'ID Wilayah (Optional)' })
-  @IsUUID()
   @IsOptional()
   wilayahId?: string;
 }

@@ -6,7 +6,588 @@ datasource db {
   provider = "postgresql"
 }
 
-// --- ENUMS ---
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(JEMAAT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+
+  @@map("users")
+}
+
+model Wilayah {
+  id            String          @id @default(uuid())
+  nama          String
+  keterangan    String?
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @default(now()) @updatedAt @map("updated_at")
+  ibadahWilayah IbadahWilayah[]
+  jemaats       Jemaat[]
+  kelompoks     Kelompok[]
+  pendalamanAlkitabs PendalamanAlkitab[]
+
+  @@map("wilayah")
+}
+
+model Kelompok {
+  id                 String   @id @default(uuid())
+  nama               String
+  wilayahId          String?  @map("wilayah_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
+  keteranganKelompok String?  @map("keterangan_kelompok")
+  jemaats            Jemaat[]
+  wilayah            Wilayah?         @relation(fields: [wilayahId], references: [id])
+  ibadahKelompoks    IbadahKelompok[]
+  pendalamanAlkitabs PendalamanAlkitab[]
+
+  @@map("kelompok")
+}
+
+model IbadahKelompok {
+  id         String   @id @default(uuid())
+  judul      String?
+  waktu      DateTime?
+  lokasi     String?
+  keterangan String?
+  kelompokId String   @map("kelompok_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+  kelompok   Kelompok @relation(fields: [kelompokId], references: [id])
+
+  @@map("ibadah_kelompok")
+}
+
+model IbadahKhusus {
+  id         String   @id @default(uuid())
+  judul      String?
+  waktu      DateTime?
+  lokasi     String?
+  keterangan String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("ibadah_khusus")
+}
+
+model PendalamanAlkitab {
+  id          String    @id @default(uuid())
+  judul       String?
+  waktu       DateTime?
+  lokasi      String?
+  keterangan  String?
+  pepanthanId String?   @map("pepanthan_id")
+  wilayahId   String?   @map("wilayah_id")
+  kelompokId  String?   @map("kelompok_id")
+  komisiId    String?   @map("komisi_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  pepanthan   Pepanthan? @relation(fields: [pepanthanId], references: [id])
+  wilayah     Wilayah?   @relation(fields: [wilayahId], references: [id])
+  kelompok    Kelompok?  @relation(fields: [kelompokId], references: [id])
+  komisi      Komisi?    @relation(fields: [komisiId], references: [id])
+
+  @@map("pendalaman_alkitab")
+}
+
+model Jemaat {
+  id                 String             @id @default(uuid())
+  nomorInduk         String             @unique @map("nomor_induk")
+  nama               String
+  jenisKelamin       JenisKelamin       @map("jenis_kelamin")
+  tempatLahir        String?            @map("tempat_lahir")
+  tanggalLahir       DateTime           @map("tanggal_lahir")
+  statusAktif        Boolean            @default(true) @map("status_aktif")
+  statusKeanggotaan  StatusKeanggotaan  @default(TETAP) @map("status_keanggotaan")
+  tanggalBergabung   DateTime           @default(now()) @map("tanggal_bergabung")
+  fotoUrl            String?            @map("foto_url")
+  catatanKhusus      String?            @map("catatan_khusus")
+  noHp               String?            @map("no_hp")
+  email              String?
+  alamat             String?
+  kota               String?
+  provinsi           String?
+  statusPernikahan   StatusPernikahan   @default(BELUM_MENIKAH) @map("status_pernikahan")
+  namaPasangan       String?            @map("nama_pasangan")
+  jumlahAnak         Int                @default(0) @map("jumlah_anak")
+  isKepalaKeluarga   Boolean            @default(false) @map("is_kepala_keluarga")
+  noKK               String?            @map("no_kk")
+  statusBaptis       StatusSakramen     @default(BELUM) @map("status_baptis")
+  tanggalBaptis      DateTime?          @map("tanggal_baptis")
+  gerejaBaptis       String?            @map("gereja_baptis")
+  statusSidi         StatusSakramen     @default(BELUM) @map("status_sidi")
+  tanggalSidi        DateTime?          @map("tanggal_sidi")
+  pendetaSidi        String?            @map("pendeta_sidi")
+  pendidikan         String?
+  pekerjaan          String?
+  instansi           String?
+  minatPelayanan     String?            @map("minat_pelayanan")
+  pelayananDiikuti   String?            @map("pelayanan_diikuti")
+  peranDalamKelompok String?            @default("Anggota") @map("peran_dalam_kelompok")
+  wilayahId          String?            @map("wilayah_id")
+  kelompokId         String?            @map("kelompok_id")
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @default(now()) @updatedAt
+  absensi            AbsensiKehadiran[]
+  kelompok           Kelompok?          @relation(fields: [kelompokId], references: [id])
+  wilayah            Wilayah?           @relation(fields: [wilayahId], references: [id])
+  kehadirans         Kehadiran[]
+  penugasans         Penugasan[]
+
+  @@map("jemaat")
+}
+
+model Pendeta {
+  id                   String           @id @default(uuid())
+  namaLengkap          String           @map("nama_lengkap")
+  gelar                String?
+  jenisKelamin         JenisKelamin     @map("jenis_kelamin")
+  tempatLahir          String?          @map("tempat_lahir")
+  tanggalLahir         DateTime         @map("tanggal_lahir")
+  statusAktif          Boolean          @default(true) @map("status_aktif")
+  fotoPendeta          String?          @map("foto_pendeta")
+  noHandphone          String           @map("no_handphone")
+  email                String?
+  alamat               String?
+  kota                 String?
+  provinsi             String?
+  jabatanPelayanan     JabatanPendeta   @map("jabatan_pelayanan")
+  tanggalPenahbisan    DateTime?        @map("tanggal_penahbisan")
+  wilayahPelayanan     String?          @map("wilayah_pelayanan")
+  bidangPelayanan      String?          @map("bidang_pelayanan")
+  jadwalPelayanan      String?          @map("jadwal_pelayanan")
+  nomorIndukPendeta    String?          @map("nomor_induk_pendeta")
+  statusPernikahan     StatusPernikahan @default(BELUM_MENIKAH) @map("status_pernikahan")
+  namaPasangan         String?          @map("nama_pasangan")
+  jumlahAnak           Int              @default(0) @map("jumlah_anak")
+  pendidikanTerakhir   String?          @map("pendidikan_terakhir")
+  institusiTeologi     String?          @map("institusi_teologi")
+  tahunLulus           Int?             @map("tahun_lulus")
+  riwayatPendidikan    String?          @map("riwayat_pendidikan")
+  biografiSingkat      String?          @map("biografi_singkat")
+  igLink               String?          @map("ig_link")
+  fbLink               String?          @map("fb_link")
+  ytLink               String?          @map("yt_link")
+  catatanInternal      String?          @map("catatan_internal")
+  riwayatPelayananText String?          @map("riwayat_pelayanan_text")
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @default(now()) @updatedAt
+
+  @@map("pendeta")
+}
+
+model Pelayanan {
+  id                      String      @id @default(uuid())
+  namaPelayanan           String      @map("nama_pelayanan")
+  kategoriPelayanan       String      @map("kategori_pelayanan")
+  deskripsiPelayanan      String?     @map("deskripsi_pelayanan")
+  koordinatorPelayanan    String      @map("koordinator_pelayanan")
+  jumlahKebutuhanPersonel Int         @default(0) @map("jumlah_kebutuhan_personel")
+  statusPelayanan         String      @default("AKTIF") @map("status_pelayanan")
+  jadwalPelayanan         String?     @map("jadwal_pelayanan")
+  catatanPelayanan        String?     @map("catatan_pelayanan")
+  createdAt               DateTime    @default(now()) @map("created_at")
+  updatedAt               DateTime    @updatedAt @map("updated_at")
+  penugasans              Penugasan[]
+
+  @@map("pelayanan")
+}
+
+model QrSession {
+  id              String      @id @default(uuid())
+  kodeQr          String      @unique @map("kode_qr")
+  namaKegiatan    String      @map("nama_kegiatan")
+  jenisKegiatan   String      @map("jenis_kegiatan")
+  tanggalKegiatan DateTime    @map("tanggal_kegiatan") @db.Date
+  waktuMulai      DateTime    @map("waktu_mulai")
+  waktuSelesai    DateTime    @map("waktu_selesai")
+  statusAktif     Boolean     @default(true) @map("status_aktif")
+  createdBy       String?     @map("created_by")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  kehadirans      Kehadiran[]
+
+  @@map("qr_session")
+}
+
+model Kehadiran {
+  id          String          @id @default(uuid())
+  jemaatId    String          @map("jemaat_id")
+  qrSessionId String          @map("qr_session_id")
+  waktuHadir  DateTime        @default(now()) @map("waktu_hadir")
+  metode      MetodeKehadiran @default(QR_CODE)
+  createdAt   DateTime        @default(now()) @map("created_at")
+  jemaat      Jemaat          @relation(fields: [jemaatId], references: [id])
+  qrSession   QrSession       @relation(fields: [qrSessionId], references: [id])
+
+  @@unique([jemaatId, qrSessionId])
+  @@map("kehadiran")
+}
+
+model Banner {
+  id          String         @id @default(uuid())
+  title       String?
+  imageUrl    String         @map("image_url")
+  kategori    String?
+  tanggal     DateTime?
+  position    BannerPosition
+  isActive    Boolean        @default(true) @map("is_aktif")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  description String?
+  type        String?        @default("BANNER")
+
+  @@map("banners")
+}
+
+model AyatAlkitab {
+  id               String   @id @default(uuid())
+  versiAlkitab     String   @map("versi_alkitab")
+  kitab            String
+  pasal            Int
+  ayat             Int
+  teksAyat         String   @map("teks_ayat")
+  bahasa           String   @default("id-ID")
+  kategoriAyat     String?  @map("kategori_ayat")
+  kataKunci        String?  @map("kata_kunci")
+  ttsStatus        Boolean  @default(true) @map("tts_status")
+  ttsBahasa        String   @default("id-ID") @map("tts_bahasa")
+  ttsKecepatanBaca String   @default("1") @map("tts_kecepatan_baca")
+  statusTampil     String   @default("AKTIF") @map("status_tampil")
+  catatanAyat      String?  @map("catatan_ayat")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("ayat_alkitab")
+}
+
+model PokokDoa {
+  id                  String    @id @default(uuid())
+  judulPokokDoa       String    @map("judul_pokok_doa")
+  kategoriDoa         String    @map("kategori_doa")
+  deskripsiDoa        String    @map("deskripsi_doa")
+  pengajuDoa          String    @map("pengaju_doa")
+  tanggalPengajuan    DateTime  @map("tanggal_pengajuan")
+  tingkatPrioritas    String    @default("Sedang") @map("tingkat_prioritas")
+  statusDoa           String    @default("AKTIF") @map("status_doa")
+  tanggalTerjawab     DateTime? @map("tanggal_terjawab")
+  kesaksianJawabanDoa String?   @map("kesaksian_jawaban_doa")
+  ttsStatus           Boolean   @default(true) @map("tts_status")
+  ttsBahasa           String    @default("id-ID") @map("tts_bahasa")
+  ttsKecepatanBaca    String    @default("1") @map("tts_kecepatan_baca")
+  statusTampil        String    @default("PUBLIK") @map("status_tampil")
+  catatanDoa          String?   @map("catatan_doa")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  @@map("pokok_doa")
+}
+
+model Renungan {
+  id               String   @id @default(uuid())
+  judul            String
+  isi              String
+  tanggal          DateTime
+  penulis          String
+  ayatAlkitab      String?  @map("ayat_alkitab")
+  ringkasan        String?
+  kategori         String?
+  gambarUrl        String?  @map("gambar_url")
+  ttsStatus        Boolean  @default(true) @map("tts_status")
+  ttsBahasa        String   @default("id-ID") @map("tts_bahasa")
+  ttsKecepatanBaca String   @default("1") @map("tts_kecepatan_baca")
+  statusTampil     String   @default("AKTIF") @map("status_tampil")
+  catatan          String?
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("renungan")
+}
+
+model ArtikelRenungan {
+  id              String   @id @default(uuid())
+  jenisKonten     String   @map("jenis_konten")
+  judulKonten     String   @map("judul_konten")
+  subJudul        String?  @map("sub_judul")
+  penulis         String
+  tanggalTerbit   DateTime @map("tanggal_terbit")
+  kategoriKonten  String   @map("kategori_konten")
+  ayatAlkitab     String?  @map("ayat_alkitab")
+  isiKonten       String   @map("isi_konten")
+  ringkasanKonten String   @map("ringkasan_konten")
+  gambarSampul    String?  @map("gambar_sampul")
+  statusPublikasi String   @default("DRAFT") @map("status_publikasi")
+  tag             String?
+  jumlahDibaca    Int      @default(0) @map("jumlah_dibaca")
+  catatanEditor   String?  @map("catatan_editor")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("artikel_renungan")
+}
+
+model BeritaKomsel {
+  id        String   @id @default(uuid())
+  title     String
+  tanggal   DateTime
+  deskripsi String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  imageUrl  String?  @map("image_url")
+
+  @@map("berita_komsel")
+}
+
+model Buletin {
+  id        String   @id @default(uuid())
+  title     String
+  tanggal   DateTime
+  deskripsi String
+  fileUrl   String?  @map("file_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("buletin")
+}
+
+model MediaGaleri {
+  id             String   @id @default(uuid())
+  jenisMedia     String   @map("jenis_media")
+  judulMedia     String   @map("judul_media")
+  deskripsiMedia String?  @map("deskripsi_media")
+  kategoriMedia  String   @map("kategori_media")
+  fileMedia      String?  @map("file_media")
+  thumbnailMedia String?  @map("thumbnail_media")
+  tanggalUpload  DateTime @map("tanggal_upload")
+  durasiMedia    String?  @map("durasi_media")
+  pengunggah     String
+  statusTampil   String   @default("DITAMPILKAN") @map("status_tampil")
+  tagMedia       String?  @map("tag_media")
+  catatanMedia   String?  @map("catatan_media")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("media_galeri")
+}
+
+model Produk {
+  id          String   @id @default(uuid())
+  title       String
+  harga       Int
+  rating      Int      @default(5)
+  deskripsi   String
+  images      String[] @default([])
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  namaPemilik String?  @map("nama_pemilik")
+  noTelp      String?  @map("no_telp")
+
+  @@map("produk")
+}
+
+model Transaksi {
+  id                 String         @id @default(uuid())
+  jenisTransaksi     JenisTransaksi @map("jenis_transaksi")
+  tanggalTransaksi   DateTime       @map("tanggal_transaksi")
+  kategoriTransaksi  String         @map("kategori_transaksi")
+  deskripsiTransaksi String         @map("deskripsi_transaksi")
+  nominal            Int
+  metodePembayaran   String         @map("metode_pembayaran")
+  sumberTujuan       String         @map("sumber_tujuan")
+  penanggungJawab    String         @map("penanggung_jawab")
+  buktiTransaksi     String?        @map("bukti_transaksi")
+  statusTransaksi    String         @default("DRAFT") @map("status_transaksi")
+  catatanTransaksi   String?        @map("catatan_transaksi")
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+
+  @@map("transaksi")
+}
+
+model Persembahan {
+  id                 String   @id @default(uuid())
+  jenisPersembahan   String   @map("jenis_persembahan")
+  tanggalPersembahan DateTime @map("tanggal_persembahan")
+  ibadahKegiatan     String   @map("ibadah_kegiatan")
+  nominal            Int
+  metodePemberian    String   @map("metode_pemberian")
+  namaPemberi        String   @default("Anonim") @map("nama_pemberi")
+  kategoriJemaat     String?  @map("kategori_jemaat")
+  tujuanPersembahan  String   @map("tujuan_persembahan")
+  statusPencatatan   String   @default("TERCATAT") @map("status_pencatatan")
+  petugasPencatat    String   @map("petugas_pencatat")
+  catatanPersembahan String?  @map("catatan_persembahan")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("persembahan")
+}
+
+model LaporanKeuangan {
+  id               String   @id @default(uuid())
+  jenisLaporan     String   @map("jenis_laporan")
+  tanggalMulai     DateTime @map("tanggal_mulai")
+  tanggalSelesai   DateTime @map("tanggal_selesai")
+  totalPemasukan   Int      @map("total_pemasukan")
+  totalPengeluaran Int      @map("total_pengeluaran")
+  saldoAwal        Int      @map("saldo_awal")
+  saldoAkhir       Int      @map("saldo_akhir")
+  ringkasanLaporan String?  @map("ringkasan_laporan")
+  disusunOleh      String   @map("disusun_oleh")
+  statusLaporan    String   @default("DRAFT") @map("status_laporan")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("laporan_keuangan")
+}
+
+model KalenderEvent {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  startDate   DateTime @map("start_date")
+  endDate     DateTime @map("end_date")
+  location    String?
+  category    String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("kalender_event")
+}
+
+model JadwalIbadah {
+  id           String             @id @default(uuid())
+  namaIbadah   String             @map("nama_ibadah")
+  tanggal      DateTime
+  waktuMulai   DateTime           @map("waktu_mulai")
+  waktuSelesai DateTime           @map("waktu_selesai")
+  lokasi       String
+  pembicara    String
+  tema         String?
+  keterangan   String?
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+  absensi      AbsensiKehadiran[]
+
+  @@map("jadwal_ibadah")
+}
+
+model KebaktianMinggu {
+  id           String   @id @default(uuid())
+  tanggal      DateTime
+  waktu        DateTime
+  tema         String
+  pengkhotbah  String
+  liturgos     String
+  pembacaWarta String?  @map("pembaca_warta")
+  catatan      String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  url          String?
+
+  @@map("kebaktian_minggu")
+}
+
+model AbsensiKehadiran {
+  id             String          @id @default(uuid())
+  jadwalIbadahId String          @map("jadwal_ibadah_id")
+  jemaatId       String          @map("jemaat_id")
+  waktuHadir     DateTime        @map("waktu_hadir")
+  metode         MetodeKehadiran
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  jadwalIbadah   JadwalIbadah    @relation(fields: [jadwalIbadahId], references: [id])
+  jemaat         Jemaat          @relation(fields: [jemaatId], references: [id])
+
+  @@map("absensi_kehadiran")
+}
+
+model Penugasan {
+  id                      String    @id @default(uuid())
+  pelayananId             String    @map("pelayanan_id")
+  petugasId               String    @map("petugas_id")
+  peranDalamPelayanan     String    @map("peran_dalam_pelayanan")
+  tanggalMulaiPenugasan   DateTime  @map("tanggal_mulai_penugasan")
+  tanggalSelesaiPenugasan DateTime? @map("tanggal_selesai_penugasan")
+  jadwalTugas             String?   @map("jadwal_tugas")
+  statusPenugasan         String    @default("AKTIF") @map("status_penugasan")
+  evaluasiKinerja         String?   @map("evaluasi_kinerja")
+  catatanPenugasan        String?   @map("catatan_penugasan")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+  pelayanan               Pelayanan @relation(fields: [pelayananId], references: [id])
+  petugas                 Jemaat    @relation(fields: [petugasId], references: [id])
+
+  @@map("penugasan")
+}
+
+model Komisi {
+  id         String   @id @default(uuid())
+  namaKomisi String   @map("nama_komisi")
+  keterangan String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  pendalamanAlkitabs PendalamanAlkitab[]
+
+  @@map("komisi")
+}
+
+model Pepanthan {
+  id              String            @id @default(uuid())
+  namaPepanthan   String            @map("nama_pepanthan")
+  alamat          String?
+  keterangan      String?
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  ibadahPepanthan IbadahPepanthan[]
+  pendalamanAlkitabs PendalamanAlkitab[]
+
+  @@map("pepanthan")
+}
+
+model IbadahUmum {
+  id         String   @id @default(uuid())
+  judul      String?
+  waktuMulai String?  @map("waktu_mulai")
+  keterangan String?
+  lokasi     String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("ibadah_umum")
+}
+
+model IbadahPepanthan {
+  id          String    @id @default(uuid())
+  judul       String?
+  waktuMulai  String?   @map("waktu_mulai")
+  keterangan  String?
+  lokasi      String?
+  pepanthanId String    @map("pepanthan_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  pepanthan   Pepanthan @relation(fields: [pepanthanId], references: [id])
+
+  @@map("ibadah_pepanthan")
+}
+
+model IbadahWilayah {
+  id         String    @id @default(uuid())
+  judul      String?
+  keterangan String?
+  lokasi     String?
+  wilayahId  String    @map("wilayah_id")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at")
+  waktu      DateTime?
+  wilayah    Wilayah   @relation(fields: [wilayahId], references: [id])
+
+  @@map("ibadah_wilayah")
+}
 
 enum Role {
   ADMIN
@@ -62,826 +643,3 @@ enum JenisTransaksi {
   PEMASUKAN
   PENGELUARAN
 }
-
-// --- MODELS ---
-
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String
-  role      Role     @default(JEMAAT)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("users")
-}
-
-model Wilayah {
-  id          String    @id @default(uuid())
-  nama        String
-  keterangan  String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  kelompoks   Kelompok[]
-  jemaats     Jemaat[]
-
-  @@map("wilayah")
-}
-
-model Kelompok {
-  id          String    @id @default(uuid())
-  nama        String
-  ketua       String?
-  jadwal      String?
-  catatan     String?
-  wilayahId   String?   @map("wilayah_id")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  wilayah     Wilayah?  @relation(fields: [wilayahId], references: [id])
-  jemaats     Jemaat[]
-
-  @@map("kelompok")
-}
-
-model Jemaat {
-  id                  String    @id @default(uuid())
-  
-  // A. Data Utama
-  nomorInduk          String    @unique @map("nomor_induk")
-  nama                String
-  jenisKelamin        JenisKelamin @map("jenis_kelamin")
-  tempatLahir         String?   @map("tempat_lahir")
-  tanggalLahir        DateTime  @map("tanggal_lahir")
-  statusAktif         Boolean   @default(true) @map("status_aktif")
-  statusKeanggotaan   StatusKeanggotaan @default(TETAP) @map("status_keanggotaan")
-  tanggalBergabung    DateTime  @default(now()) @map("tanggal_bergabung")
-  fotoUrl             String?   @map("foto_url")
-  catatanKhusus       String?   @map("catatan_khusus") @db.Text
-
-  // B. Kontak & Alamat
-  noHp                String?   @map("no_hp")
-  email               String?
-  alamat              String?   @db.Text
-  kota                String?
-  provinsi            String?
-
-  // C. Keluarga
-  statusPernikahan    StatusPernikahan @default(BELUM_MENIKAH) @map("status_pernikahan")
-  namaPasangan        String?   @map("nama_pasangan")
-  jumlahAnak          Int       @default(0) @map("jumlah_anak")
-  isKepalaKeluarga    Boolean   @default(false) @map("is_kepala_keluarga")
-  noKK                String?   @map("no_kk")
-
-  // D. Rohani
-  statusBaptis        StatusSakramen @default(BELUM) @map("status_baptis")
-  tanggalBaptis       DateTime?      @map("tanggal_baptis")
-  gerejaBaptis        String?        @map("gereja_baptis")
-  
-  statusSidi          StatusSakramen @default(BELUM) @map("status_sidi")
-  tanggalSidi         DateTime?      @map("tanggal_sidi")
-  pendetaSidi         String?        @map("pendeta_sidi")
-
-  // E. Pekerjaan & Pendidikan
-  pendidikan          String?
-  pekerjaan           String?
-  instansi            String?
-
-  // F. Pelayanan
-  minatPelayanan      String?   @map("minat_pelayanan")
-  pelayananDiikuti    String?   @map("pelayanan_diikuti")
-  peranDalamKelompok  String?   @default("Anggota") @map("peran_dalam_kelompok")
-  
-  // Relasi
-  wilayahId           String?   @map("wilayah_id")
-  kelompokId          String?   @map("kelompok_id")
-  
-  wilayah             Wilayah?  @relation(fields: [wilayahId], references: [id])
-  kelompok            Kelompok? @relation(fields: [kelompokId], references: [id])
-
-  kehadirans          Kehadiran[]
-  absensi             AbsensiKehadiran[]
-
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-
-  penugasans          Penugasan[]
-
-  @@map("jemaat")
-}
-
-model Pendeta {
-  id                  String    @id @default(uuid())
-  
-  // A. Informasi Utama
-  namaLengkap         String    @map("nama_lengkap")
-  gelar               String?
-  jenisKelamin        JenisKelamin @map("jenis_kelamin")
-  tempatLahir         String?   @map("tempat_lahir")
-  tanggalLahir        DateTime  @map("tanggal_lahir")
-  statusAktif         Boolean   @default(true) @map("status_aktif")
-  fotoPendeta         String?   @map("foto_pendeta")
-
-  // B. Kontak
-  noHandphone         String    @map("no_handphone")
-  email               String?
-  alamat              String?   @db.Text
-  kota                String?
-  provinsi            String?
-
-  // C. Data Kepelayanan
-  jabatanPelayanan    JabatanPendeta @map("jabatan_pelayanan")
-  tanggalPenahbisan   DateTime?      @map("tanggal_penahbisan")
-  wilayahPelayanan    String?        @map("wilayah_pelayanan")
-  bidangPelayanan     String?        @map("bidang_pelayanan")
-  jadwalPelayanan     String?        @map("jadwal_pelayanan")
-  nomorIndukPendeta   String?        @map("nomor_induk_pendeta")
-
-  // D. Keluarga
-  statusPernikahan    StatusPernikahan @default(BELUM_MENIKAH) @map("status_pernikahan")
-  namaPasangan        String?          @map("nama_pasangan")
-  jumlahAnak          Int              @default(0) @map("jumlah_anak")
-
-  // E. Pendidikan
-  pendidikanTerakhir  String?   @map("pendidikan_terakhir")
-  institusiTeologi    String?   @map("institusi_teologi")
-  tahunLulus          Int?      @map("tahun_lulus")
-  riwayatPendidikan   String?   @map("riwayat_pendidikan") @db.Text
-
-  // F. Media
-  biografiSingkat     String?   @map("biografi_singkat") @db.Text
-  igLink              String?   @map("ig_link")
-  fbLink              String?   @map("fb_link")
-  ytLink              String?   @map("yt_link")
-
-  // G. Internal
-  catatanInternal     String?   @map("catatan_internal") @db.Text
-  riwayatPelayananText String?  @map("riwayat_pelayanan_text") @db.Text
-
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-
-  @@map("pendeta")
-}
-
-model Pelayanan {
-  id                        String   @id @default(uuid())
-  namaPelayanan             String   @map("nama_pelayanan")
-  kategoriPelayanan         String   @map("kategori_pelayanan")
-  deskripsiPelayanan        String?  @map("deskripsi_pelayanan") @db.Text
-  koordinatorPelayanan      String   @map("koordinator_pelayanan")
-  jumlahKebutuhanPersonel   Int      @default(0) @map("jumlah_kebutuhan_personel")
-  statusPelayanan           String   @default("AKTIF") @map("status_pelayanan")
-  jadwalPelayanan           String?  @map("jadwal_pelayanan")
-  catatanPelayanan          String?  @map("catatan_pelayanan") @db.Text
-
-  createdAt                 DateTime @default(now()) @map("created_at")
-  updatedAt                 DateTime @updatedAt @map("updated_at")
-
-  penugasans                Penugasan[]
-
-  @@map("pelayanan")
-}
-
-model QrSession {
-  id              String      @id @default(uuid())
-  kodeQr          String      @unique @map("kode_qr")
-  namaKegiatan    String      @map("nama_kegiatan")
-  jenisKegiatan   String      @map("jenis_kegiatan")
-  tanggalKegiatan DateTime    @map("tanggal_kegiatan") @db.Date
-  waktuMulai      DateTime    @map("waktu_mulai")
-  waktuSelesai    DateTime    @map("waktu_selesai")
-  statusAktif     Boolean     @default(true) @map("status_aktif")
-  createdBy       String?     @map("created_by")
-  createdAt       DateTime    @default(now()) @map("created_at")
-  updatedAt       DateTime    @updatedAt @map("updated_at")
-
-  kehadirans      Kehadiran[]
-
-  @@map("qr_session")
-}
-
-model Kehadiran {
-  id           String          @id @default(uuid())
-  jemaatId     String          @map("jemaat_id")
-  qrSessionId  String          @map("qr_session_id")
-  waktuHadir   DateTime        @default(now()) @map("waktu_hadir")
-  metode       MetodeKehadiran @default(QR_CODE)
-  createdAt    DateTime        @default(now()) @map("created_at")
-
-  jemaat       Jemaat          @relation(fields: [jemaatId], references: [id])
-  qrSession    QrSession       @relation(fields: [qrSessionId], references: [id])
-
-  @@unique([jemaatId, qrSessionId])
-  @@map("kehadiran")
-}
-
-model Banner {
-  id          String         @id @default(uuid())
-  title       String?
-  description String?        @db.Text
-  imageUrl    String         @map("image_url")
-  type        String?        @default("BANNER")
-  kategori  String?
-  tanggal   DateTime?
-  position  BannerPosition
-  isActive  Boolean        @default(true) @map("is_aktif")
-  createdAt DateTime       @default(now()) @map("created_at")
-  updatedAt DateTime       @updatedAt @map("updated_at")
-
-  @@map("banners")
-}
-
-model AyatAlkitab {
-  id                String   @id @default(uuid())
-  versiAlkitab      String   @map("versi_alkitab")
-  kitab             String
-  pasal             Int
-  ayat              Int
-  teksAyat          String   @map("teks_ayat") @db.Text
-  bahasa            String   @default("id-ID")
-  kategoriAyat      String?  @map("kategori_ayat")
-  kataKunci         String?  @map("kata_kunci")
-  
-  // TTS Fields
-  ttsStatus         Boolean  @default(true) @map("tts_status")
-  ttsBahasa         String   @default("id-ID") @map("tts_bahasa")
-  ttsKecepatanBaca  String   @default("1") @map("tts_kecepatan_baca")
-  
-  // Meta
-  statusTampil      String   @default("AKTIF") @map("status_tampil")
-  catatanAyat       String?  @map("catatan_ayat") @db.Text
-
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
-
-  @@map("ayat_alkitab")
-}
-
-model PokokDoa {
-  id                  String    @id @default(uuid())
-  judulPokokDoa       String    @map("judul_pokok_doa")
-  kategoriDoa         String    @map("kategori_doa")
-  deskripsiDoa        String    @map("deskripsi_doa") @db.Text
-  pengajuDoa          String    @map("pengaju_doa")
-  tanggalPengajuan    DateTime  @map("tanggal_pengajuan")
-  tingkatPrioritas    String    @default("Sedang") @map("tingkat_prioritas")
-  statusDoa           String    @default("AKTIF") @map("status_doa")
-  tanggalTerjawab     DateTime? @map("tanggal_terjawab")
-  kesaksianJawabanDoa String?   @map("kesaksian_jawaban_doa") @db.Text
-  
-  // TTS Fields
-  ttsStatus           Boolean   @default(true) @map("tts_status")
-  ttsBahasa           String    @default("id-ID") @map("tts_bahasa")
-  ttsKecepatanBaca    String    @default("1") @map("tts_kecepatan_baca")
-  
-  // Meta
-  statusTampil        String    @default("PUBLIK") @map("status_tampil")
-  catatanDoa          String?   @map("catatan_doa") @db.Text
-
-  createdAt           DateTime  @default(now()) @map("created_at")
-  updatedAt           DateTime  @updatedAt @map("updated_at")
-
-  @@map("pokok_doa")
-}
-
-model Renungan {
-  id                  String    @id @default(uuid())
-  judul               String
-  isi                 String    @db.Text
-  tanggal             DateTime
-  penulis             String
-  ayatAlkitab         String?   @map("ayat_alkitab")
-  ringkasan           String?   @db.Text
-  kategori            String?
-  gambarUrl           String?   @map("gambar_url")
-  
-  // TTS Fields
-  ttsStatus           Boolean   @default(true) @map("tts_status")
-  ttsBahasa           String    @default("id-ID") @map("tts_bahasa")
-  ttsKecepatanBaca    String    @default("1") @map("tts_kecepatan_baca")
-  
-  // Meta
-  statusTampil        String    @default("AKTIF") @map("status_tampil")
-  catatan             String?   @db.Text
-
-  createdAt           DateTime  @default(now()) @map("created_at")
-  updatedAt           DateTime  @updatedAt @map("updated_at")
-
-  @@map("renungan")
-}
-
-model ArtikelRenungan {
-  id              String   @id @default(uuid())
-  jenisKonten     String   @map("jenis_konten") // Artikel / Renungan
-  judulKonten     String   @map("judul_konten")
-  subJudul        String?  @map("sub_judul")
-  penulis         String
-  tanggalTerbit   DateTime @map("tanggal_terbit")
-  kategoriKonten  String   @map("kategori_konten")
-  ayatAlkitab     String?  @map("ayat_alkitab")
-  isiKonten       String   @map("isi_konten") @db.Text
-  ringkasanKonten String   @map("ringkasan_konten") @db.Text
-  gambarSampul    String?  @map("gambar_sampul")
-  statusPublikasi String   @default("DRAFT") @map("status_publikasi")
-  tag             String?
-  jumlahDibaca    Int      @default(0) @map("jumlah_dibaca")
-  catatanEditor   String?  @map("catatan_editor") @db.Text
-
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
-
-  @@map("artikel_renungan")
-}
-
-model BeritaKomsel {
-  id        String   @id @default(uuid())
-  title     String
-  tanggal   DateTime
-  deskripsi String   @db.Text
-  imageUrl  String?  @map("image_url")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("berita_komsel")
-}
-
-model Buletin {
-  id        String   @id @default(uuid())
-  title     String
-  tanggal   DateTime
-  deskripsi String   @db.Text
-  fileUrl   String?  @map("file_url")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("buletin")
-}
-
-model MediaGaleri {
-  id             String   @id @default(uuid())
-  jenisMedia     String   @map("jenis_media")
-  judulMedia     String   @map("judul_media")
-  deskripsiMedia String?  @map("deskripsi_media") @db.Text
-  kategoriMedia  String   @map("kategori_media")
-  fileMedia      String?  @map("file_media")
-  thumbnailMedia String?  @map("thumbnail_media")
-  tanggalUpload  DateTime @map("tanggal_upload")
-  durasiMedia    String?  @map("durasi_media")
-  pengunggah     String
-  statusTampil   String   @default("DITAMPILKAN") @map("status_tampil")
-  tagMedia       String?  @map("tag_media")
-  catatanMedia   String?  @map("catatan_media") @db.Text
-
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-
-  @@map("media_galeri")
-}
-
-model Produk {
-  id          String   @id @default(uuid())
-  title       String
-  harga       Int
-  rating      Int      @default(5)
-  deskripsi   String   @db.Text
-  images      String[] @default([])
-  noTelp      String?  @map("no_telp")
-  namaPemilik String?  @map("nama_pemilik")
-  
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  @@map("produk")
-}
-
-model Transaksi {
-  id                 String         @id @default(uuid())
-  jenisTransaksi     JenisTransaksi @map("jenis_transaksi")
-  tanggalTransaksi   DateTime       @map("tanggal_transaksi")
-  kategoriTransaksi  String         @map("kategori_transaksi")
-  deskripsiTransaksi String         @map("deskripsi_transaksi") @db.Text
-  nominal            Int
-  metodePembayaran   String         @map("metode_pembayaran")
-  sumberTujuan       String         @map("sumber_tujuan")
-  penanggungJawab    String         @map("penanggung_jawab")
-  buktiTransaksi     String?        @map("bukti_transaksi")
-  statusTransaksi    String         @default("DRAFT") @map("status_transaksi")
-  catatanTransaksi   String?        @map("catatan_transaksi") @db.Text
-
-  createdAt          DateTime       @default(now()) @map("created_at")
-  updatedAt          DateTime       @updatedAt @map("updated_at")
-
-  @@map("transaksi")
-}
-
-model Persembahan {
-  id                 String   @id @default(uuid())
-  jenisPersembahan   String   @map("jenis_persembahan")
-  tanggalPersembahan DateTime @map("tanggal_persembahan")
-  ibadahKegiatan     String   @map("ibadah_kegiatan")
-  nominal            Int
-  metodePemberian    String   @map("metode_pemberian")
-  namaPemberi        String   @default("Anonim") @map("nama_pemberi")
-  kategoriJemaat     String?  @map("kategori_jemaat")
-  tujuanPersembahan  String   @map("tujuan_persembahan")
-  statusPencatatan   String   @default("TERCATAT") @map("status_pencatatan")
-  petugasPencatat    String   @map("petugas_pencatat")
-  catatanPersembahan String?  @map("catatan_persembahan") @db.Text
-
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("updated_at")
-
-  @@map("persembahan")
-}
-
-model LaporanKeuangan {
-  id                String   @id @default(uuid())
-  jenisLaporan      String   @map("jenis_laporan")
-  tanggalMulai      DateTime @map("tanggal_mulai")
-  tanggalSelesai    DateTime @map("tanggal_selesai")
-  totalPemasukan    Int      @map("total_pemasukan")
-  totalPengeluaran  Int      @map("total_pengeluaran")
-  saldoAwal         Int      @map("saldo_awal")
-  saldoAkhir        Int      @map("saldo_akhir")
-  ringkasanLaporan  String?  @map("ringkasan_laporan") @db.Text
-  disusunOleh       String   @map("disusun_oleh")
-  statusLaporan     String   @default("DRAFT") @map("status_laporan")
-
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
-
-  @@map("laporan_keuangan")
-}
-
-model KalenderEvent {
-  id          String   @id @default(uuid())
-  title       String
-  description String?  @db.Text
-  startDate   DateTime @map("start_date")
-  endDate     DateTime @map("end_date")
-  location    String?
-  category    String?
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("kalender_event")
-}
-
-model JadwalIbadah {
-  id           String   @id @default(uuid())
-  namaIbadah   String   @map("nama_ibadah")
-  tanggal      DateTime
-  waktuMulai   DateTime @map("waktu_mulai")
-  waktuSelesai DateTime @map("waktu_selesai")
-  lokasi       String
-  pembicara    String
-  tema         String?
-  keterangan   String?  @db.Text
-
-  absensi      AbsensiKehadiran[]
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("jadwal_ibadah")
-}
-
-model KebaktianMinggu {
-  id             String   @id @default(uuid())
-  tanggal        DateTime
-  waktu          DateTime
-  tema           String
-  pengkhotbah    String
-  liturgos       String
-  pembacaWarta   String?  @map("pembaca_warta")
-  catatan        String?  @db.Text
-  url            String?
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("kebaktian_minggu")
-}
-
-model AbsensiKehadiran {
-  id              String         @id @default(uuid())
-  jadwalIbadahId  String         @map("jadwal_ibadah_id")
-  jemaatId        String         @map("jemaat_id")
-  waktuHadir      DateTime       @map("waktu_hadir")
-  metode          MetodeKehadiran
-
-  jadwalIbadah    JadwalIbadah   @relation(fields: [jadwalIbadahId], references: [id])
-  jemaat          Jemaat         @relation(fields: [jemaatId], references: [id])
-
-  createdAt       DateTime       @default(now()) @map("created_at")
-  updatedAt       DateTime       @updatedAt @map("updated_at")
-
-  @@map("absensi_kehadiran")
-}
-
-model Penugasan {
-  id                      String    @id @default(uuid())
-  pelayananId             String    @map("pelayanan_id")
-  petugasId               String    @map("petugas_id")
-  peranDalamPelayanan     String    @map("peran_dalam_pelayanan")
-  tanggalMulaiPenugasan   DateTime  @map("tanggal_mulai_penugasan")
-  tanggalSelesaiPenugasan DateTime? @map("tanggal_selesai_penugasan")
-  jadwalTugas             String?   @map("jadwal_tugas")
-  statusPenugasan         String    @default("AKTIF") @map("status_penugasan")
-  evaluasiKinerja         String?   @map("evaluasi_kinerja") @db.Text
-  catatanPenugasan        String?   @map("catatan_penugasan") @db.Text
-
-  pelayanan               Pelayanan @relation(fields: [pelayananId], references: [id])
-  petugas                 Jemaat    @relation(fields: [petugasId], references: [id])
-
-    createdAt               DateTime  @default(now())  @map("created_at")
-
-    updatedAt               DateTime  @updatedAt @map("updated_at")
-
-  
-
-    @@map("penugasan")
-
-  }
-
-  
-
-  model Komisi {
-
-  
-
-    id          String   @id @default(uuid())
-
-  
-
-    namaKomisi  String   @map("nama_komisi")
-
-  
-
-    keterangan  String?  @db.Text
-
-  
-
-    createdAt   DateTime @default(now()) @map("created_at")
-
-  
-
-    updatedAt   DateTime @updatedAt @map("updated_at")
-
-  
-
-  
-
-  
-
-    @@map("komisi")
-
-  
-
-  }
-
-  
-
-  
-
-  
-
-  model Pepanthan {
-
-  
-
-  
-
-  
-
-    id              String   @id @default(uuid())
-
-  
-
-  
-
-  
-
-    namaPepanthan   String   @map("nama_pepanthan")
-
-  
-
-  
-
-  
-
-    alamat          String?  @db.Text
-
-  
-
-  
-
-  
-
-    keterangan      String?  @db.Text
-
-  
-
-  
-
-  
-
-    createdAt       DateTime @default(now()) @map("created_at")
-
-  
-
-  
-
-  
-
-        updatedAt       DateTime @updatedAt @map("updated_at")
-    
-        ibadahPepanthan IbadahPepanthan[]
-    
-        @@map("pepanthan")
-    
-      }
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  model IbadahUmum {
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-    id          String   @id @default(uuid())
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-    judul       String?
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-    waktuMulai  String?  @map("waktu_mulai")
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-    keterangan  String?  @db.Text
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-    lokasi      String?
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-    createdAt   DateTime @default(now()) @map("created_at")
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-    updatedAt   DateTime @updatedAt @map("updated_at")
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-        @@map("ibadah_umum")
-    
-      }
-    
-      model IbadahPepanthan {
-        id            String    @id @default(uuid())
-        judul         String?
-        waktuMulai    String?   @map("waktu_mulai")
-        keterangan    String?   @db.Text
-        lokasi        String?
-        
-        pepanthanId   String    @map("pepanthan_id")
-        pepanthan     Pepanthan @relation(fields: [pepanthanId], references: [id])
-    
-        createdAt     DateTime  @default(now()) @map("created_at")
-        updatedAt     DateTime  @updatedAt @map("updated_at")
-    
-        @@map("ibadah_pepanthan")
-      }

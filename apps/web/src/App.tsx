@@ -49,6 +49,14 @@ import IbadahUmumListPage from "./pages/cms/ibadah-umum/IbadahUmumListPage";
 import IbadahUmumFormPage from "./pages/cms/ibadah-umum/IbadahUmumFormPage";
 import IbadahPepanthanListPage from "./pages/cms/ibadah-pepanthan/IbadahPepanthanListPage";
 import IbadahPepanthanFormPage from "./pages/cms/ibadah-pepanthan/IbadahPepanthanFormPage";
+import IbadahWilayahListPage from "./pages/cms/ibadah-wilayah/IbadahWilayahListPage";
+import IbadahWilayahFormPage from "./pages/cms/ibadah-wilayah/IbadahWilayahFormPage";
+import IbadahKelompokListPage from "./pages/cms/ibadah-kelompok/IbadahKelompokListPage";
+import IbadahKelompokFormPage from "./pages/cms/ibadah-kelompok/IbadahKelompokFormPage";
+import IbadahKhususListPage from "./pages/cms/ibadah-khusus/IbadahKhususListPage";
+import IbadahKhususFormPage from "./pages/cms/ibadah-khusus/IbadahKhususFormPage";
+import PendalamanAlkitabListPage from "./pages/cms/pendalaman-alkitab/PendalamanAlkitabListPage";
+import PendalamanAlkitabFormPage from "./pages/cms/pendalaman-alkitab/PendalamanAlkitabFormPage";
 
 // Kehadiran Pages
 import QrSessionListPage from "./pages/cms/kehadiran/QrSessionListPage";
@@ -64,6 +72,11 @@ import PokokDoaPage from "./pages/cms/doa/PokokDoaPage";
 import TransaksiPage from "./pages/cms/keuangan/TransaksiPage";
 import PersembahanPage from "./pages/cms/keuangan/PersembahanPage";
 import LaporanKeuanganPage from "./pages/cms/keuangan/LaporanKeuanganPage";
+
+import WilayahListPage from "./pages/cms/wilayah/WilayahListPage";
+import WilayahFormPage from "./pages/cms/wilayah/WilayahFormPage";
+import KelompokListPage from "./pages/cms/kelompok/KelompokListPage";
+import KelompokFormPage from "./pages/cms/kelompok/KelompokFormPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -117,6 +130,12 @@ const App = () => (
                 <Route path="/jemaat/create" element={<JemaatFormPage />} />
                 <Route path="/jemaat/edit/:id" element={<JemaatFormPage />} />
                 <Route path="/jemaat/wilayah" element={<JemaatWilayahPage />} />
+                <Route path="/wilayah" element={<WilayahListPage />} />
+                <Route path="/wilayah/create" element={<WilayahFormPage />} />
+                <Route path="/wilayah/edit/:id" element={<WilayahFormPage />} />
+                <Route path="/kelompok" element={<KelompokListPage />} />
+                <Route path="/kelompok/create" element={<KelompokFormPage />} />
+                <Route path="/kelompok/edit/:id" element={<KelompokFormPage />} />
                 <Route path="/pendeta" element={<DataPendetaPage />} />
                 <Route path="/pendeta/create" element={<PendetaFormPage />} />
                 <Route path="/pendeta/edit/:id" element={<PendetaFormPage />} />
@@ -140,6 +159,26 @@ const App = () => (
                 <Route path="/ibadah-pepanthan" element={<IbadahPepanthanListPage />} />
                 <Route path="/ibadah-pepanthan/create" element={<IbadahPepanthanFormPage />} />
                 <Route path="/ibadah-pepanthan/edit/:id" element={<IbadahPepanthanFormPage />} />
+                
+                {/* Ibadah Wilayah */}
+                <Route path="/ibadah-wilayah" element={<IbadahWilayahListPage />} />
+                <Route path="/ibadah-wilayah/create" element={<IbadahWilayahFormPage />} />
+                <Route path="/ibadah-wilayah/edit/:id" element={<IbadahWilayahFormPage />} />
+                
+                {/* Ibadah Kelompok */}
+                <Route path="/ibadah-kelompok" element={<IbadahKelompokListPage />} />
+                <Route path="/ibadah-kelompok/create" element={<IbadahKelompokFormPage />} />
+                <Route path="/ibadah-kelompok/edit/:id" element={<IbadahKelompokFormPage />} />
+
+                {/* Ibadah Khusus */}
+                <Route path="/ibadah-khusus" element={<IbadahKhususListPage />} />
+                <Route path="/ibadah-khusus/create" element={<IbadahKhususFormPage />} />
+                <Route path="/ibadah-khusus/edit/:id" element={<IbadahKhususFormPage />} />
+
+                {/* Pendalaman Alkitab */}
+                <Route path="/pendalaman-alkitab" element={<PendalamanAlkitabListPage />} />
+                <Route path="/pendalaman-alkitab/create" element={<PendalamanAlkitabFormPage />} />
+                <Route path="/pendalaman-alkitab/edit/:id" element={<PendalamanAlkitabFormPage />} />
                 
                 {/* Kehadiran */}
                 <Route path="/kehadiran/sesi" element={<QrSessionListPage />} />

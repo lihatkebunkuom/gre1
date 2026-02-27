@@ -19,79 +19,29 @@ model User {
 }
 
 model Wilayah {
-  id                 String              @id @default(uuid())
-  nama               String
-  keterangan         String?
-  createdAt          DateTime            @default(now()) @map("created_at")
-  updatedAt          DateTime            @default(now()) @updatedAt @map("updated_at")
-  ibadahWilayah      IbadahWilayah[]
-  jemaats            Jemaat[]
-  kelompoks          Kelompok[]
-  pendalamanAlkitabs PendalamanAlkitab[]
+  id            String          @id @default(uuid())
+  nama          String
+  keterangan    String?
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @default(now()) @updatedAt @map("updated_at")
+  ibadahWilayah IbadahWilayah[]
+  jemaats       Jemaat[]
+  kelompoks     Kelompok[]
 
   @@map("wilayah")
 }
 
 model Kelompok {
-  id                 String              @id @default(uuid())
+  id                 String   @id @default(uuid())
   nama               String
-  wilayahId          String?             @map("wilayah_id")
-  createdAt          DateTime            @default(now()) @map("created_at")
-  updatedAt          DateTime            @default(now()) @updatedAt @map("updated_at")
-  keteranganKelompok String?             @map("keterangan_kelompok")
+  wilayahId          String?  @map("wilayah_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
+  keteranganKelompok String?  @map("keterangan_kelompok")
   jemaats            Jemaat[]
-  wilayah            Wilayah?            @relation(fields: [wilayahId], references: [id])
-  ibadahKelompoks    IbadahKelompok[]
-  pendalamanAlkitabs PendalamanAlkitab[]
+  wilayah            Wilayah? @relation(fields: [wilayahId], references: [id])
 
   @@map("kelompok")
-}
-
-model IbadahKelompok {
-  id         String    @id @default(uuid())
-  judul      String?
-  waktu      DateTime?
-  lokasi     String?
-  keterangan String?
-  kelompokId String    @map("kelompok_id")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at")
-  kelompok   Kelompok  @relation(fields: [kelompokId], references: [id])
-
-  @@map("ibadah_kelompok")
-}
-
-model IbadahKhusus {
-  id         String    @id @default(uuid())
-  judul      String?
-  waktu      DateTime?
-  lokasi     String?
-  keterangan String?
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at")
-
-  @@map("ibadah_khusus")
-}
-
-model PendalamanAlkitab {
-  id          String    @id @default(uuid())
-  judul       String?
-  waktu       DateTime?
-  lokasi      String?
-  keterangan  String?
-  pepanthanId String?   @map("pepanthan_id")
-  wilayahId   String?   @map("wilayah_id")
-  kelompokId  String?   @map("kelompok_id")
-  komisiId    String?   @map("komisi_id")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
-
-  pepanthan Pepanthan? @relation(fields: [pepanthanId], references: [id])
-  wilayah   Wilayah?   @relation(fields: [wilayahId], references: [id])
-  kelompok  Kelompok?  @relation(fields: [kelompokId], references: [id])
-  komisi    Komisi?    @relation(fields: [komisiId], references: [id])
-
-  @@map("pendalaman_alkitab")
 }
 
 model Jemaat {
@@ -131,7 +81,7 @@ model Jemaat {
   wilayahId          String?            @map("wilayah_id")
   kelompokId         String?            @map("kelompok_id")
   createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @default(now()) @updatedAt
+  updatedAt          DateTime
   absensi            AbsensiKehadiran[]
   kelompok           Kelompok?          @relation(fields: [kelompokId], references: [id])
   wilayah            Wilayah?           @relation(fields: [wilayahId], references: [id])
@@ -175,7 +125,7 @@ model Pendeta {
   catatanInternal      String?          @map("catatan_internal")
   riwayatPelayananText String?          @map("riwayat_pelayanan_text")
   createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @default(now()) @updatedAt
+  updatedAt            DateTime
 
   @@map("pendeta")
 }
@@ -526,25 +476,23 @@ model Penugasan {
 }
 
 model Komisi {
-  id                 String              @id @default(uuid())
-  namaKomisi         String              @map("nama_komisi")
-  keterangan         String?
-  createdAt          DateTime            @default(now()) @map("created_at")
-  updatedAt          DateTime            @updatedAt @map("updated_at")
-  pendalamanAlkitabs PendalamanAlkitab[]
+  id         String   @id @default(uuid())
+  namaKomisi String   @map("nama_komisi")
+  keterangan String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   @@map("komisi")
 }
 
 model Pepanthan {
-  id                 String              @id @default(uuid())
-  namaPepanthan      String              @map("nama_pepanthan")
-  alamat             String?
-  keterangan         String?
-  createdAt          DateTime            @default(now()) @map("created_at")
-  updatedAt          DateTime            @updatedAt @map("updated_at")
-  ibadahPepanthan    IbadahPepanthan[]
-  pendalamanAlkitabs PendalamanAlkitab[]
+  id              String            @id @default(uuid())
+  namaPepanthan   String            @map("nama_pepanthan")
+  alamat          String?
+  keterangan      String?
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  ibadahPepanthan IbadahPepanthan[]
 
   @@map("pepanthan")
 }

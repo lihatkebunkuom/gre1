@@ -17,7 +17,8 @@ import {
   UserCheck,
   QrCode,
   LayoutGrid,
-  Home
+  Home,
+  MapPin
 } from "lucide-react";
 import { UserRole } from "@/types";
 
@@ -62,6 +63,24 @@ export const SIDEBAR_GROUPS: NavGroup[] = [
         items: [
           { title: "Daftar Jemaat", href: "/jemaat", roles: [] },
           { title: "Tambah Jemaat", href: "/jemaat/create", roles: [] },
+        ]
+      },
+      {
+        title: "Wilayah",
+        icon: MapPin,
+        roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
+        items: [
+          { title: "Daftar Wilayah", href: "/wilayah", roles: [] },
+          { title: "Tambah Wilayah", href: "/wilayah/create", roles: [] },
+        ]
+      },
+      {
+        title: "Kelompok",
+        icon: Users,
+        roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
+        items: [
+          { title: "Daftar Kelompok", href: "/kelompok", roles: [] },
+          { title: "Tambah Kelompok", href: "/kelompok/create", roles: [] },
         ]
       },
       {
@@ -110,24 +129,6 @@ export const SIDEBAR_GROUPS: NavGroup[] = [
           { title: "Daftar Pepanthan", href: "/pepanthan", roles: [] },
           { title: "Tambah Pepanthan", href: "/pepanthan/create", roles: [] },
         ]
-      },
-      {
-        title: "Ibadah Pepanthan",
-        icon: Calendar,
-        roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
-        items: [
-          { title: "Daftar Ibadah Pepanthan", href: "/ibadah-pepanthan", roles: [] },
-          { title: "Tambah Ibadah Pepanthan", href: "/ibadah-pepanthan/create", roles: [] },
-        ]
-      },
-      {
-        title: "Ibadah Umum",
-        icon: Calendar,
-        roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
-        items: [
-          { title: "Daftar Ibadah Umum", href: "/ibadah-umum", roles: [] },
-          { title: "Tambah Ibadah Umum", href: "/ibadah-umum/create", roles: [] },
-        ]
       }
     ]
   },
@@ -146,12 +147,57 @@ export const SIDEBAR_GROUPS: NavGroup[] = [
         ]
       },
       {
-        title: "Divisi Pelayanan",
-        icon: Church,
+        title: "Ibadah Pepanthan",
+        icon: Calendar,
         roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
         items: [
-          { title: "Daftar Divisi", href: "/pelayanan", roles: [] },
-          { title: "Anggota Tim", href: "/pelayanan/anggota", roles: [] },
+          { title: "Daftar Ibadah Pepanthan", href: "/ibadah-pepanthan", roles: [] },
+          { title: "Tambah Ibadah Pepanthan", href: "/ibadah-pepanthan/create", roles: [] },
+        ]
+      },
+      {
+        title: "Ibadah Wilayah",
+        icon: Calendar,
+        roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
+        items: [
+          { title: "Daftar Ibadah Wilayah", href: "/ibadah-wilayah", roles: [] },
+          { title: "Tambah Ibadah Wilayah", href: "/ibadah-wilayah/create", roles: [] },
+        ]
+      },
+      {
+        title: "Ibadah Umum",
+        icon: Calendar,
+        roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
+        items: [
+          { title: "Daftar Ibadah Umum", href: "/ibadah-umum", roles: [] },
+          { title: "Tambah Ibadah Umum", href: "/ibadah-umum/create", roles: [] },
+        ]
+      },
+      {
+        title: "Ibadah Kelompok",
+        icon: Calendar,
+        roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
+        items: [
+          { title: "Daftar Ibadah Kelompok", href: "/ibadah-kelompok", roles: [] },
+          { title: "Tambah Ibadah Kelompok", href: "/ibadah-kelompok/create", roles: [] },
+        ]
+      },
+      {
+        title: "Ibadah Khusus",
+        icon: Calendar,
+        roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
+        items: [
+          { title: "Daftar Ibadah Khusus", href: "/ibadah-khusus", roles: [] },
+          { title: "Tambah Ibadah Khusus", href: "/ibadah-khusus/create", roles: [] },
+        ]
+      },
+      {
+        title: "Pendalaman Alkitab",
+        icon: BookOpen,
+        roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
+        items: [
+          { title: "Daftar PA", href: "/pendalaman-alkitab", roles: [] },
+          { title: "Tambah PA", href: "/pendalaman-alkitab/create", roles: [] },
         ]
       }
     ]
@@ -187,6 +233,15 @@ export const SIDEBAR_GROUPS: NavGroup[] = [
         items: [
           { title: "Alkitab Digital", href: "/alkitab", roles: [] },
           { title: "Pokok Doa", href: "/doa", roles: [] },
+        ]
+      },
+      {
+        title: "Divisi Pelayanan",
+        icon: Church,
+        roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
+        items: [
+          { title: "Daftar Divisi", href: "/pelayanan", roles: [] },
+          { title: "Anggota Tim", href: "/pelayanan/anggota", roles: [] },
         ]
       }
     ]
