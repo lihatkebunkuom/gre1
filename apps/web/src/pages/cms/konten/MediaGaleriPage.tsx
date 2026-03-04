@@ -414,7 +414,41 @@ const MediaGaleriPage = () => {
 
               <div className="grid grid-cols-2 gap-4">
                  <FormField control={form.control} name="kategoriMedia" render={({ field }) => (
-                   <FormItem><FormLabel>Kategori</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Pilih Kategori" /></SelectTrigger></FormControl><SelectContent>{KATEGORI_MEDIA.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                   <FormItem>
+                     <FormLabel>Kategori</FormLabel>
+                     <div className="space-y-2">
+                       <Select 
+                         onValueChange={(val) => {
+                           if (val === "CUSTOM") {
+                             field.onChange("");
+                           } else {
+                             field.onChange(val);
+                           }
+                         }} 
+                         value={KATEGORI_MEDIA.includes(field.value) ? field.value : (field.value === "" ? "" : "CUSTOM")}
+                       >
+                         <FormControl>
+                           <SelectTrigger>
+                             <SelectValue placeholder="Pilih Kategori" />
+                           </SelectTrigger>
+                         </FormControl>
+                         <SelectContent>
+                           {KATEGORI_MEDIA.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                           <SelectItem value="CUSTOM" className="text-primary font-medium">+ Input Manual</SelectItem>
+                         </SelectContent>
+                       </Select>
+                       
+                       {(!KATEGORI_MEDIA.includes(field.value) && field.value !== undefined) && (
+                         <Input 
+                           placeholder="Masukkan kategori baru..." 
+                           value={field.value} 
+                           onChange={(e) => field.onChange(e.target.value)}
+                           className="animate-in fade-in slide-in-from-top-1 duration-200"
+                         />
+                       )}
+                     </div>
+                     <FormMessage />
+                   </FormItem>
                  )} />
                  <FormField control={form.control} name="pengunggah" render={({ field }) => (
                    <FormItem><FormLabel>Pengunggah</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Pilih Pengunggah" /></SelectTrigger></FormControl><SelectContent>{PENGUNGGAH_OPTIONS.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
