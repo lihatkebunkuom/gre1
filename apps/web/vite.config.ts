@@ -6,8 +6,13 @@ import path from "path";
 export default defineConfig(() => ({
   server: {
     host: "::",
-    port: 8080,
-    allowedHosts: ["gretal.ngrok.app", "gretal-cms.ngrok.app"],
+    port: 4173,
+    strictPort: true,
+    allowedHosts: [
+      "gretal.ngrok.app", 
+      "gretal-cms.ngrok.app", 
+      "gretal-app.paranjana.com"
+    ],
     proxy: {
       '/api': {
         target: 'http://localhost:3000',
