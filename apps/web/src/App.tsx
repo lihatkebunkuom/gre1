@@ -77,6 +77,7 @@ import WilayahListPage from "./pages/cms/wilayah/WilayahListPage";
 import WilayahFormPage from "./pages/cms/wilayah/WilayahFormPage";
 import KelompokListPage from "./pages/cms/kelompok/KelompokListPage";
 import KelompokFormPage from "./pages/cms/kelompok/KelompokFormPage";
+import ReportsPage from "./pages/cms/reports/ReportsPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -240,7 +241,10 @@ import MediaGaleriPage from "./pages/cms/konten/MediaGaleriPage";
                    <Route path="/keuangan/laporan" element={<LaporanKeuanganPage />} />
                 </Route>
 
-                <Route path="/laporan" element={<ModulePlaceholder title="Laporan & Analitik" />} />
+import ReportsPage from "./pages/cms/reports/ReportsPage";
+
+// ... rest of imports
+                <Route path="/laporan" element={<ReportsPage />} />
                 <Route path="/pengaturan" element={<ModulePlaceholder title="Pengaturan Sistem" />} />
               </Route>
             </Route>

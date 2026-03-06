@@ -1,0 +1,12 @@
+
+> api@0.0.1 start:dev /home/mamo/Projects/test/gre1/apps/api
+> nest start --watch
+
+[2J[3J[H[[90m4:11:24 PM[0m] Starting compilation in watch mode...
+
+[91merror[0m[90m TS2688: [0mCannot find type definition file for 'date-fns'.
+  The file is in the program because:
+    Entry point for implicit type library 'date-fns'
+
+[[90m4:11:27 PM[0m] Found 1 error. Watching for file changes.
+

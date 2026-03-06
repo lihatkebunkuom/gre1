@@ -138,9 +138,16 @@ const PendetaFormPage = () => {
   useEffect(() => {
     if (existingData) {
       const data = existingData as any;
+      
+      // Bersihkan data dari null agar tidak memicu warning di React input
+      const sanitizedData = Object.entries(data).reduce((acc, [key, value]) => {
+        acc[key] = value === null ? "" : value;
+        return acc;
+      }, {} as any);
+
       form.reset({
-        ...data,
-        tanggalLahir: new Date(data.tanggalLahir),
+        ...sanitizedData,
+        tanggalLahir: data.tanggalLahir ? new Date(data.tanggalLahir) : new Date(),
         tanggalPenahbisan: data.tanggalPenahbisan ? new Date(data.tanggalPenahbisan) : undefined,
       });
     }
@@ -165,7 +172,28 @@ const PendetaFormPage = () => {
   });
 
   const onSubmit = (values: FormValues) => {
-    mutation.mutate(values);
+    // 1. Buang field read-only dan bersihkan string kosong
+    const cleanValues = Object.entries(values).reduce((acc, [key, value]) => {
+      // Lewati field internal
+      if (['id', 'createdAt', 'updatedAt'].includes(key)) return acc;
+      
+      // Ubah string kosong menjadi undefined agar backend @IsOptional bekerja
+      if (value === "") {
+        acc[key] = undefined;
+      } else {
+        acc[key] = value;
+      }
+      return acc;
+    }, {} as any);
+
+    // 2. Format tanggal ke YYYY-MM-DD agar tidak bergeser karena timezone
+    const formattedValues = {
+      ...cleanValues,
+      tanggalLahir: values.tanggalLahir ? format(values.tanggalLahir, "yyyy-MM-dd") : undefined,
+      tanggalPenahbisan: values.tanggalPenahbisan ? format(values.tanggalPenahbisan, "yyyy-MM-dd") : undefined,
+    };
+
+    mutation.mutate(formattedValues as any);
   };
 
   const onInvalid = (errors: any) => {

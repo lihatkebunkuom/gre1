@@ -8,8 +8,4 @@ if (!url) {
 }
 
 export default defineConfig({
-  earlyAccess: true,
-  datasource: {
-    url,
-  },
 });

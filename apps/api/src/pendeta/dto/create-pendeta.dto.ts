@@ -1,7 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { 
-  IsBoolean, IsDateString, IsEmail, IsEnum, IsInt, IsOptional, IsString, Min 
+  IsBoolean, IsDate, IsEmail, IsEnum, IsInt, IsOptional, IsString, Min 
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { JenisKelamin, JabatanPendeta, StatusPernikahan } from '@prisma/client';
 
 export class CreatePendetaDto {
@@ -24,7 +25,8 @@ export class CreatePendetaDto {
   tempatLahir?: string;
 
   @ApiProperty()
-  @IsDateString()
+  @IsDate()
+  @Type(() => Date)
   tanggalLahir: Date;
 
   @ApiPropertyOptional({ default: true })
@@ -67,7 +69,8 @@ export class CreatePendetaDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsDateString()
+  @IsDate()
+  @Type(() => Date)
   tanggalPenahbisan?: Date;
 
   @ApiPropertyOptional()

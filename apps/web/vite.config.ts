@@ -6,7 +6,7 @@ import path from "path";
 export default defineConfig(() => ({
   server: {
     host: "::",
-    port: 4173,
+    port: 8081,
     strictPort: true,
     allowedHosts: [
       "gretal.ngrok.app", 

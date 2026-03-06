@@ -33,6 +33,7 @@ import { IbadahWilayahModule } from './ibadah-wilayah/ibadah-wilayah.module';
 import { IbadahKelompokModule } from './ibadah-kelompok/ibadah-kelompok.module';
 import { IbadahKhususModule } from './ibadah-khusus/ibadah-khusus.module';
 import { PendalamanAlkitabModule } from './pendalaman-alkitab/pendalaman-alkitab.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -67,7 +68,8 @@ import { PendalamanAlkitabModule } from './pendalaman-alkitab/pendalaman-alkitab
     IbadahWilayahModule,
     IbadahKelompokModule,
     IbadahKhususModule,
-    PendalamanAlkitabModule
+    PendalamanAlkitabModule,
+    AnalyticsModule
   ],
   controllers: [AppController],
   providers: [AppService],
