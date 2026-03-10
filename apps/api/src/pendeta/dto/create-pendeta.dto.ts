@@ -3,7 +3,7 @@ import {
   IsBoolean, IsDate, IsEmail, IsEnum, IsInt, IsOptional, IsString, Min 
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { JenisKelamin, JabatanPendeta, StatusPernikahan } from '@prisma/client';
+import { JenisKelamin, StatusPernikahan } from '@prisma/client';
 
 export class CreatePendetaDto {
   @ApiProperty()
@@ -24,10 +24,11 @@ export class CreatePendetaDto {
   @IsString()
   tempatLahir?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsDate()
   @Type(() => Date)
-  tanggalLahir: Date;
+  tanggalLahir?: Date | null;
 
   @ApiPropertyOptional({ default: true })
   @IsOptional()
@@ -39,9 +40,10 @@ export class CreatePendetaDto {
   @IsString()
   fotoPendeta?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  noHandphone: string;
+  noHandphone?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -63,15 +65,16 @@ export class CreatePendetaDto {
   @IsString()
   provinsi?: string;
 
-  @ApiProperty({ enum: JabatanPendeta })
-  @IsEnum(JabatanPendeta)
-  jabatanPelayanan: JabatanPendeta;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  jabatanPelayanan?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsDate()
   @Type(() => Date)
-  tanggalPenahbisan?: Date;
+  tanggalPenahbisan?: Date | null;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -93,10 +96,10 @@ export class CreatePendetaDto {
   @IsString()
   nomorIndukPendeta?: string;
 
-  @ApiPropertyOptional({ enum: StatusPernikahan, default: StatusPernikahan.BELUM_MENIKAH })
+  @ApiPropertyOptional({ enum: StatusPernikahan })
   @IsOptional()
   @IsEnum(StatusPernikahan)
-  statusPernikahan?: StatusPernikahan;
+  statusPernikahan?: StatusPernikahan | null;
 
   @ApiPropertyOptional()
   @IsOptional()

@@ -7,8 +7,12 @@ export class IbadahUmumService {
   constructor(private prisma: PrismaService) {}
 
   async create(createIbadahUmumDto: CreateIbadahUmumDto) {
+    const { tanggalumum, ...rest } = createIbadahUmumDto;
     return this.prisma.ibadahUmum.create({
-      data: createIbadahUmumDto,
+      data: {
+        ...rest,
+        tanggalumum: tanggalumum ? new Date(tanggalumum) : null,
+      },
     });
   }
 
@@ -39,9 +43,14 @@ export class IbadahUmumService {
 
   async update(id: string, updateIbadahUmumDto: Partial<CreateIbadahUmumDto>) {
     await this.findOne(id);
+    const { tanggalumum, ...rest } = updateIbadahUmumDto;
+    
     return this.prisma.ibadahUmum.update({
       where: { id },
-      data: updateIbadahUmumDto,
+      data: {
+        ...rest,
+        tanggalumum: tanggalumum ? new Date(tanggalumum) : undefined,
+      },
     });
   }
 

@@ -147,21 +147,21 @@ model Pendeta {
   gelar                String?
   jenisKelamin         JenisKelamin     @map("jenis_kelamin")
   tempatLahir          String?          @map("tempat_lahir")
-  tanggalLahir         DateTime         @map("tanggal_lahir")
+  tanggalLahir         DateTime?        @map("tanggal_lahir")
   statusAktif          Boolean          @default(true) @map("status_aktif")
   fotoPendeta          String?          @map("foto_pendeta")
-  noHandphone          String           @map("no_handphone")
+  noHandphone          String?          @map("no_handphone")
   email                String?
   alamat               String?
-  kota                 String?
-  provinsi             String?
-  jabatanPelayanan     JabatanPendeta   @map("jabatan_pelayanan")
+  kota               String?
+  provinsi           String?
+  jabatanPelayanan     String?          @map("jabatan_pelayanan")
   tanggalPenahbisan    DateTime?        @map("tanggal_penahbisan")
   wilayahPelayanan     String?          @map("wilayah_pelayanan")
   bidangPelayanan      String?          @map("bidang_pelayanan")
   jadwalPelayanan      String?          @map("jadwal_pelayanan")
   nomorIndukPendeta    String?          @map("nomor_induk_pendeta")
-  statusPernikahan     StatusPernikahan @default(BELUM_MENIKAH) @map("status_pernikahan")
+  statusPernikahan     StatusPernikahan? @map("status_pernikahan")
   namaPasangan         String?          @map("nama_pasangan")
   jumlahAnak           Int              @default(0) @map("jumlah_anak")
   pendidikanTerakhir   String?          @map("pendidikan_terakhir")
@@ -550,27 +550,33 @@ model Pepanthan {
 }
 
 model IbadahUmum {
-  id         String   @id @default(uuid())
-  judul      String?
-  waktuMulai String?  @map("waktu_mulai")
-  keterangan String?
-  lokasi     String?
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(uuid())
+  judul        String
+  waktuMulai   String   @map("waktu_mulai")
+  keterangan   String?
+  lokasi       String
+  bahasaumum   String?  @map("bahasaumum")
+  tanggalumum  DateTime? @map("tanggalumum")
+  petugasumum  String?  @map("petugasumum")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   @@map("ibadah_umum")
 }
 
 model IbadahPepanthan {
-  id          String    @id @default(uuid())
-  judul       String?
-  waktuMulai  String?   @map("waktu_mulai")
-  keterangan  String?
-  lokasi      String?
-  pepanthanId String    @map("pepanthan_id")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  pepanthan   Pepanthan @relation(fields: [pepanthanId], references: [id])
+  id               String    @id @default(uuid())
+  judul            String
+  waktuMulai       String    @map("waktu_mulai")
+  keterangan       String?
+  lokasi           String
+  pepanthanId      String    @map("pepanthan_id")
+  bahasapepanthan  String?   @map("bahasapepanthan")
+  tanggalpepanthan DateTime? @map("tanggalpepanthan")
+  petugaspepanthan String?   @map("petugaspepanthan")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  pepanthan        Pepanthan @relation(fields: [pepanthanId], references: [id])
 
   @@map("ibadah_pepanthan")
 }

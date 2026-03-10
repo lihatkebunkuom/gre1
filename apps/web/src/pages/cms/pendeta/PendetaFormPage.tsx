@@ -40,18 +40,18 @@ const formSchema = z.object({
   gelar: z.string().optional(),
   jenisKelamin: z.enum(["L", "P"], { required_error: "Pilih jenis kelamin" }),
   tempatLahir: z.string().optional(),
-  tanggalLahir: z.date({ required_error: "Tanggal lahir wajib diisi" }),
+  tanggalLahir: z.date().optional(),
   statusAktif: z.boolean().default(true),
 
   // B. Kontak
-  noHandphone: z.string().min(10, "Nomor HP tidak valid"),
+  noHandphone: z.string().optional(),
   email: z.string().email("Format email salah").optional().or(z.literal("")),
   alamat: z.string().optional(),
   kota: z.string().optional(),
   provinsi: z.string().optional(),
 
   // C. Data Kepelayanan
-  jabatanPelayanan: z.string().min(1, "Jabatan wajib dipilih"),
+  jabatanPelayanan: z.string().optional(),
   tanggalPenahbisan: z.date().optional(),
   wilayahPelayanan: z.string().optional(),
   bidangPelayanan: z.string().optional(),
@@ -65,7 +65,7 @@ const formSchema = z.object({
 
   // E. Administratif
   nomorIndukPendeta: z.string().optional(),
-  statusPernikahan: z.enum(["MENIKAH", "BELUM_MENIKAH", "CERAI_HIDUP", "CERAI_MATI"]).optional(),
+  statusPernikahan: z.enum(["MENIKAH", "BELUM_MENIKAH", "CERAI_HIDUP", "CERAI_MATI"]).optional().nullable(),
   namaPasangan: z.string().optional(),
   jumlahAnak: z.coerce.number().default(0),
 
@@ -120,7 +120,7 @@ const PendetaFormPage = () => {
       tahunLulus: 0, 
       riwayatPendidikan: "",
       nomorIndukPendeta: "", 
-      statusPernikahan: "BELUM_MENIKAH", 
+      statusPernikahan: undefined, 
       namaPasangan: "", 
       jumlahAnak: 0,
       biografiSingkat: "", 
@@ -130,7 +130,7 @@ const PendetaFormPage = () => {
       catatanInternal: "", 
       riwayatPelayananText: "",
       fotoPendeta: "",
-      tanggalLahir: new Date(),
+      tanggalLahir: undefined,
     },
   });
 
@@ -147,7 +147,7 @@ const PendetaFormPage = () => {
 
       form.reset({
         ...sanitizedData,
-        tanggalLahir: data.tanggalLahir ? new Date(data.tanggalLahir) : new Date(),
+        tanggalLahir: data.tanggalLahir ? new Date(data.tanggalLahir) : undefined,
         tanggalPenahbisan: data.tanggalPenahbisan ? new Date(data.tanggalPenahbisan) : undefined,
       });
     }
@@ -189,6 +189,7 @@ const PendetaFormPage = () => {
     // 2. Format tanggal ke YYYY-MM-DD agar tidak bergeser karena timezone
     const formattedValues = {
       ...cleanValues,
+      statusPernikahan: values.statusPernikahan === "" || !values.statusPernikahan ? null : values.statusPernikahan,
       tanggalLahir: values.tanggalLahir ? format(values.tanggalLahir, "yyyy-MM-dd") : undefined,
       tanggalPenahbisan: values.tanggalPenahbisan ? format(values.tanggalPenahbisan, "yyyy-MM-dd") : undefined,
     };
@@ -269,7 +270,7 @@ const PendetaFormPage = () => {
                           <FormItem><FormLabel>Tempat Lahir</FormLabel><FormControl><Input {...field} className="h-11" /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="tanggalLahir" render={({ field }) => (
-                          <FormItem className="flex flex-col"><FormLabel>Tanggal Lahir <span className="text-red-500">*</span></FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal h-11", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP", { locale: localeId }) : <span>Pilih tanggal</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date()} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>
+                          <FormItem className="flex flex-col"><FormLabel>Tanggal Lahir</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal h-11", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP", { locale: localeId }) : <span>Pilih tanggal (opsional)</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date()} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>
                         )} />
                     </div>
                 </div>
@@ -285,7 +286,7 @@ const PendetaFormPage = () => {
             <CardContent className="p-8 pt-0 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField control={form.control} name="noHandphone" render={({ field }) => (
-                        <FormItem><FormLabel>No. Handphone <span className="text-red-500">*</span></FormLabel><FormControl><Input {...field} className="h-11" /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>No. Handphone</FormLabel><FormControl><Input {...field} className="h-11" /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="email" render={({ field }) => (
                         <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} className="h-11" /></FormControl><FormMessage /></FormItem>
@@ -313,7 +314,35 @@ const PendetaFormPage = () => {
             <CardContent className="p-8 pt-0 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                      <FormField control={form.control} name="jabatanPelayanan" render={({ field }) => (
-                        <FormItem><FormLabel>Jabatan Pelayanan <span className="text-red-500">*</span></FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="h-11"><SelectValue placeholder="Pilih Jabatan" /></SelectTrigger></FormControl><SelectContent><SelectItem value="GEMBALA_SIDANG">Gembala Sidang</SelectItem><SelectItem value="WAKIL_GEMBALA">Wakil Gembala</SelectItem><SelectItem value="PENDETA_MUDA">Pendeta Muda</SelectItem><SelectItem value="PENATUA">Penatua</SelectItem><SelectItem value="EVANGELIS">Evangelis</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Jabatan Pelayanan</FormLabel>
+                          <div className="space-y-2">
+                            <Select 
+                              onValueChange={(val) => {
+                                if (val !== "LAINNYA") field.onChange(val);
+                                else field.onChange(""); // Reset if choosing "Other" to let user type
+                              }} 
+                              value={["PENDETA", "VIKARIS"].includes(field.value) ? field.value : (field.value === "" ? "" : "LAINNYA")}
+                            >
+                              <FormControl><SelectTrigger className="h-11"><SelectValue placeholder="Pilih Jabatan" /></SelectTrigger></FormControl>
+                              <SelectContent>
+                                <SelectItem value="PENDETA">Pendeta</SelectItem>
+                                <SelectItem value="VIKARIS">Vikaris</SelectItem>
+                                <SelectItem value="LAINNYA">Input Manual...</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            
+                            {/* Input Manual muncul jika memilih opsi Lainnya atau sedang berisi teks kustom */}
+                            {(!["PENDETA", "VIKARIS"].includes(field.value) || field.value === "") && (
+                              <Input 
+                                placeholder="Masukkan jabatan manual (contoh: Penatua, Guru Injil)" 
+                                value={field.value} 
+                                onChange={(e) => field.onChange(e.target.value)}
+                                className="h-11 border-dashed"
+                              />
+                            )}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
                       )} />
                      <FormField control={form.control} name="tanggalPenahbisan" render={({ field }) => (
                         <FormItem className="flex flex-col"><FormLabel>Tanggal Penahbisan</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal h-11", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP", { locale: localeId }) : <span>Pilih tanggal</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>

@@ -8,8 +8,12 @@ export class IbadahPepanthanService {
   constructor(private prisma: PrismaService) {}
 
   async create(createIbadahPepanthanDto: CreateIbadahPepanthanDto) {
+    const { tanggalpepanthan, ...rest } = createIbadahPepanthanDto;
     return this.prisma.ibadahPepanthan.create({
-      data: createIbadahPepanthanDto,
+      data: {
+        ...rest,
+        tanggalpepanthan: tanggalpepanthan ? new Date(tanggalpepanthan) : null,
+      },
     });
   }
 
@@ -46,9 +50,14 @@ export class IbadahPepanthanService {
 
   async update(id: string, updateIbadahPepanthanDto: UpdateIbadahPepanthanDto) {
     await this.findOne(id);
+    const { tanggalpepanthan, ...rest } = updateIbadahPepanthanDto;
+    
     return this.prisma.ibadahPepanthan.update({
       where: { id },
-      data: updateIbadahPepanthanDto,
+      data: {
+        ...rest,
+        tanggalpepanthan: tanggalpepanthan ? new Date(tanggalpepanthan) : undefined,
+      },
     });
   }
 

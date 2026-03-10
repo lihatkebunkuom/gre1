@@ -1,24 +1,39 @@
-import { IsOptional, IsString, IsDateString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsString, IsNotEmpty, IsDateString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateIbadahUmumDto {
-  @ApiProperty({ description: 'Judul Ibadah', required: false })
-  @IsOptional()
+  @ApiProperty({ description: 'Judul Ibadah', required: true })
+  @IsNotEmpty({ message: 'Judul ibadah wajib diisi' })
   @IsString()
-  judul?: string;
+  judul: string;
 
-  @ApiProperty({ description: 'Waktu Mulai Ibadah', required: false })
-  @IsOptional()
+  @ApiProperty({ description: 'Waktu Mulai Ibadah', required: true })
+  @IsNotEmpty({ message: 'Waktu mulai wajib diisi' })
   @IsString()
-  waktuMulai?: string;
+  waktuMulai: string;
 
-  @ApiProperty({ description: 'Keterangan Ibadah', required: false })
+  @ApiPropertyOptional({ description: 'Keterangan Ibadah' })
   @IsOptional()
   @IsString()
   keterangan?: string;
 
-  @ApiProperty({ description: 'Lokasi Ibadah', required: false })
+  @ApiProperty({ description: 'Lokasi Ibadah', required: true })
+  @IsNotEmpty({ message: 'Lokasi ibadah wajib diisi' })
+  @IsString()
+  lokasi: string;
+
+  @ApiPropertyOptional({ description: 'Bahasa Ibadah' })
   @IsOptional()
   @IsString()
-  lokasi?: string;
+  bahasaumum?: string;
+
+  @ApiPropertyOptional({ description: 'Tanggal Ibadah' })
+  @IsOptional()
+  @IsDateString()
+  tanggalumum?: string;
+
+  @ApiPropertyOptional({ description: 'Petugas Ibadah' })
+  @IsOptional()
+  @IsString()
+  petugasumum?: string;
 }

@@ -102,13 +102,13 @@ const DataPendetaPage = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className="font-normal">
-                      {item.jabatanPelayanan.replace(/_/g, " ")}
+                    <Badge variant="secondary" className="font-normal capitalize">
+                      {item.jabatanPelayanan ? item.jabatanPelayanan.replace(/_/g, " ").toLowerCase() : "Belum Diatur"}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col text-xs text-muted-foreground gap-1">
-                      <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {item.noHandphone}</span>
+                      <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {item.noHandphone || "-"}</span>
                       {item.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {item.email}</span>}
                     </div>
                   </TableCell>

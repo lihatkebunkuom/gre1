@@ -3,9 +3,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Calendar as CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { id as localeId } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,13 +16,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { apiClient } from "@/services/api-client";
+import { cn } from "@/lib/utils";
 
 const ibadahUmumSchema = z.object({
-  judul: z.string().optional(),
-  waktuMulai: z.string().optional(),
-  lokasi: z.string().optional(),
+  judul: z.string().min(1, { message: "Judul ibadah wajib diisi" }),
+  waktuMulai: z.string().min(1, { message: "Waktu mulai wajib diisi" }),
+  lokasi: z.string().min(1, { message: "Lokasi wajib diisi" }),
   keterangan: z.string().optional(),
+  bahasaumum: z.string().optional(),
+  tanggalumum: z.date().optional().nullable(),
+  petugasumum: z.string().optional(),
 });
 
 type IbadahUmumFormValues = z.infer<typeof ibadahUmumSchema>;
@@ -38,6 +46,9 @@ const IbadahUmumFormPage = () => {
       waktuMulai: "",
       lokasi: "",
       keterangan: "",
+      bahasaumum: "",
+      tanggalumum: null,
+      petugasumum: "",
     },
   });
 
@@ -51,6 +62,9 @@ const IbadahUmumFormPage = () => {
         waktuMulai: data.waktuMulai || "",
         lokasi: data.lokasi || "",
         keterangan: data.keterangan || "",
+        bahasaumum: data.bahasaumum || "",
+        tanggalumum: data.tanggalumum ? new Date(data.tanggalumum) : null,
+        petugasumum: data.petugasumum || "",
       });
       return data;
     },
@@ -59,10 +73,14 @@ const IbadahUmumFormPage = () => {
 
   const mutation = useMutation({
     mutationFn: async (values: IbadahUmumFormValues) => {
+      const payload = {
+        ...values,
+        tanggalumum: values.tanggalumum ? format(values.tanggalumum, "yyyy-MM-dd") : null,
+      };
       if (isEdit) {
-        return apiClient.patch(`/ibadah-umum/${id}`, values);
+        return apiClient.patch(`/ibadah-umum/${id}`, payload);
       }
-      return apiClient.post("/ibadah-umum", values);
+      return apiClient.post("/ibadah-umum", payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ibadah-umum'] });
@@ -87,7 +105,7 @@ const IbadahUmumFormPage = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-6 max-w-2xl mx-auto pb-20">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate("/ibadah-umum")}>
           <ArrowLeft className="h-5 w-5" />
@@ -107,7 +125,7 @@ const IbadahUmumFormPage = () => {
                 name="judul"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Judul Ibadah</FormLabel>
+                    <FormLabel>Judul Ibadah <span className="text-red-500">*</span></FormLabel>
                     <FormControl>
                       <Input placeholder="Contoh: Ibadah Minggu Pagi" {...field} />
                     </FormControl>
@@ -116,26 +134,67 @@ const IbadahUmumFormPage = () => {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="waktuMulai"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Waktu Mulai</FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="tanggalumum"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Tanggal</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP", { locale: localeId })
+                              ) : (
+                                <span>Pilih tanggal</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value || undefined}
+                            onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="waktuMulai"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Waktu Mulai <span className="text-red-500">*</span></FormLabel>
+                      <FormControl>
+                        <Input type="time" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
                 name="lokasi"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Lokasi</FormLabel>
+                    <FormLabel>Lokasi <span className="text-red-500">*</span></FormLabel>
                     <FormControl>
                       <Input placeholder="Contoh: Gedung Utama Lt. 1" {...field} />
                     </FormControl>
@@ -143,6 +202,36 @@ const IbadahUmumFormPage = () => {
                   </FormItem>
                 )}
               />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="bahasaumum"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Bahasa</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Contoh: Indonesia" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="petugasumum"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Petugas</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Contoh: Pdt. Budi Santoso" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}

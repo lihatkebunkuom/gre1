@@ -8,8 +8,19 @@ export class PendetaService {
   constructor(private prisma: PrismaService) {}
 
   create(createPendetaDto: CreatePendetaDto) {
+    const data = { ...createPendetaDto };
+    
+    // Pastikan tanggal hanya diproses jika ada nilainya
+    if (data.tanggalLahir === null || data.tanggalLahir === undefined) {
+      delete data.tanggalLahir;
+    }
+    if (data.tanggalPenahbisan === null || data.tanggalPenahbisan === undefined) {
+      delete data.tanggalPenahbisan;
+    }
+    
+    // Status pernikahan dibiarkan sesuai kiriman DTO (bisa null)
     return this.prisma.pendeta.create({
-      data: createPendetaDto,
+      data,
     });
   }
 
@@ -26,9 +37,18 @@ export class PendetaService {
   }
 
   update(id: string, updatePendetaDto: UpdatePendetaDto) {
+    const data = { ...updatePendetaDto };
+    
+    if (data.tanggalLahir === null || data.tanggalLahir === undefined) {
+      delete data.tanggalLahir;
+    }
+    if (data.tanggalPenahbisan === null || data.tanggalPenahbisan === undefined) {
+      delete data.tanggalPenahbisan;
+    }
+
     return this.prisma.pendeta.update({
       where: { id },
-      data: updatePendetaDto,
+      data,
     });
   }
 
