@@ -48,41 +48,50 @@ model Kelompok {
 }
 
 model IbadahKelompok {
-  id         String   @id @default(uuid())
-  judul      String?
-  waktu      DateTime?
-  lokasi     String?
-  keterangan String?
-  kelompokId String   @map("kelompok_id")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
-  kelompok   Kelompok @relation(fields: [kelompokId], references: [id])
+  id              String    @id @default(uuid())
+  judul           String    @default("")
+  waktuMulai      String    @default("") @map("waktu_mulai")
+  lokasi          String    @default("")
+  keterangan      String?
+  kelompokId      String    @map("kelompok_id")
+  bahasakelompok  String?   @map("bahasakelompok")
+  tanggalkelompok DateTime? @map("tanggalkelompok")
+  petugaskelompok String?   @map("petugaskelompok")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
+  kelompok        Kelompok  @relation(fields: [kelompokId], references: [id])
 
   @@map("ibadah_kelompok")
 }
 
 model IbadahKhusus {
-  id         String   @id @default(uuid())
-  judul      String?
-  waktu      DateTime?
-  lokasi     String?
-  keterangan String?
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+  id              String    @id @default(uuid())
+  judul           String    @default("")
+  waktuMulai      String    @default("") @map("waktu_mulai")
+  lokasi          String    @default("")
+  keterangan      String?
+  bahasakhusus    String?   @map("bahasakhusus")
+  tanggalkhusus   DateTime? @map("tanggalkhusus")
+  petugaskhusus   String?   @map("petugaskhusus")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
 
   @@map("ibadah_khusus")
 }
 
 model PendalamanAlkitab {
   id          String    @id @default(uuid())
-  judul       String?
-  waktu       DateTime?
-  lokasi      String?
+  judul       String    @default("")
+  waktuMulai  String    @default("") @map("waktu_mulai")
+  lokasi      String    @default("")
   keterangan  String?
   pepanthanId String?   @map("pepanthan_id")
   wilayahId   String?   @map("wilayah_id")
   kelompokId  String?   @map("kelompok_id")
   komisiId    String?   @map("komisi_id")
+  bahasapa    String?   @map("bahasapa")
+  tanggalpa   DateTime? @map("tanggalpa")
+  petugaspa   String?   @map("petugaspa")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
 
@@ -313,13 +322,14 @@ model ArtikelRenungan {
   jenisKonten     String   @map("jenis_konten")
   judulKonten     String   @map("judul_konten")
   subJudul        String?  @map("sub_judul")
-  penulis         String
+  penulis         String?
   tanggalTerbit   DateTime @map("tanggal_terbit")
-  kategoriKonten  String   @map("kategori_konten")
+  kategoriKonten  String?  @map("kategori_konten")
   ayatAlkitab     String?  @map("ayat_alkitab")
-  isiKonten       String   @map("isi_konten")
-  ringkasanKonten String   @map("ringkasan_konten")
+  isiKonten       String?  @map("isi_konten")
+   ringkasanKonten String?  @map("ringkasan_konten")
   gambarSampul    String?  @map("gambar_sampul")
+  periode         String   @default("Harian")
   statusPublikasi String   @default("DRAFT") @map("status_publikasi")
   tag             String?
   jumlahDibaca    Int      @default(0) @map("jumlah_dibaca")
@@ -347,6 +357,7 @@ model Buletin {
   title     String
   tanggal   DateTime
   deskripsi String
+  gambarUrl String?  @map("gambar_url")
   fileUrl   String?  @map("file_url")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -357,14 +368,14 @@ model Buletin {
 model MediaGaleri {
   id             String   @id @default(uuid())
   jenisMedia     String   @map("jenis_media")
-  judulMedia     String   @map("judul_media")
+  judulMedia     String?  @map("judul_media")
   deskripsiMedia String?  @map("deskripsi_media")
   kategoriMedia  String   @map("kategori_media")
   fileMedia      String?  @map("file_media")
-  thumbnailMedia String?  @map("thumbnail_media")
+  thumbnailMedia String   @map("thumbnail_media")
   tanggalUpload  DateTime @map("tanggal_upload")
   durasiMedia    String?  @map("durasi_media")
-  pengunggah     String
+  pengunggah     String?
   statusTampil   String   @default("DITAMPILKAN") @map("status_tampil")
   tagMedia       String?  @map("tag_media")
   catatanMedia   String?  @map("catatan_media")
@@ -372,6 +383,17 @@ model MediaGaleri {
   updatedAt      DateTime @updatedAt @map("updated_at")
 
   @@map("media_galeri")
+}
+
+model TentangGereja {
+  id                    String   @id @default(uuid())
+  sejarah               String   @db.Text
+  visiMisi              String   @map("visi_misi") @db.Text
+  susunanMajelis        String   @map("susunan_majelis") @db.Text
+  susunanPengurusKomisi String   @map("susunan_pengurus_komisi") @db.Text
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("tentang_gereja")
 }
 
 model Produk {

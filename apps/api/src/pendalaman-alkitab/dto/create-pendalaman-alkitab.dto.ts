@@ -1,21 +1,21 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsOptional, IsString, IsUUID } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsDateString, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreatePendalamanAlkitabDto {
-  @ApiPropertyOptional({ example: 'Pendalaman Alkitab Tematik' })
+  @ApiProperty({ example: 'Pendalaman Alkitab Tematik', required: true })
+  @IsNotEmpty({ message: 'Judul ibadah wajib diisi' })
   @IsString()
-  @IsOptional()
-  judul?: string;
+  judul: string;
 
-  @ApiPropertyOptional({ example: '2026-05-20T18:30:00Z' })
-  @IsDateString()
-  @IsOptional()
-  waktu?: string;
-
-  @ApiPropertyOptional({ example: 'Gedung Pertemuan Lt. 2' })
+  @ApiProperty({ example: '18:30', required: true })
+  @IsNotEmpty({ message: 'Waktu mulai wajib diisi' })
   @IsString()
-  @IsOptional()
-  lokasi?: string;
+  waktuMulai: string;
+
+  @ApiProperty({ example: 'Gedung Pertemuan Lt. 2', required: true })
+  @IsNotEmpty({ message: 'Lokasi wajib diisi' })
+  @IsString()
+  lokasi: string;
 
   @ApiPropertyOptional({ example: 'Membahas tentang Surat-surat Paulus' })
   @IsString()
@@ -41,4 +41,19 @@ export class CreatePendalamanAlkitabDto {
   @IsUUID()
   @IsOptional()
   komisiId?: string;
+
+  @ApiPropertyOptional({ description: 'Bahasa Ibadah' })
+  @IsOptional()
+  @IsString()
+  bahasapa?: string;
+
+  @ApiPropertyOptional({ description: 'Tanggal Ibadah' })
+  @IsOptional()
+  @IsDateString()
+  tanggalpa?: string;
+
+  @ApiPropertyOptional({ description: 'Petugas Ibadah' })
+  @IsOptional()
+  @IsString()
+  petugaspa?: string;
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateIbadahKhususDto } from './dto/create-ibadah-khusus.dto';
 import { UpdateIbadahKhususDto } from './dto/update-ibadah-khusus.dto';
@@ -7,32 +7,47 @@ import { UpdateIbadahKhususDto } from './dto/update-ibadah-khusus.dto';
 export class IbadahKhususService {
   constructor(private prisma: PrismaService) {}
 
-  create(createDto: CreateIbadahKhususDto) {
+  async create(createDto: CreateIbadahKhususDto) {
+    const { tanggalkhusus, ...rest } = createDto;
     return this.prisma.ibadahKhusus.create({
-      data: createDto,
+      data: {
+        ...rest,
+        tanggalkhusus: tanggalkhusus ? new Date(tanggalkhusus) : null,
+      },
     });
   }
 
-  findAll() {
+  async findAll() {
     return this.prisma.ibadahKhusus.findMany({
-      orderBy: { waktu: 'desc' },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
-  findOne(id: string) {
-    return this.prisma.ibadahKhusus.findUnique({
+  async findOne(id: string) {
+    const ibadah = await this.prisma.ibadahKhusus.findUnique({
       where: { id },
     });
+    if (!ibadah) {
+      throw new NotFoundException(`Ibadah Khusus with ID ${id} not found`);
+    }
+    return ibadah;
   }
 
-  update(id: string, updateDto: UpdateIbadahKhususDto) {
+  async update(id: string, updateDto: UpdateIbadahKhususDto) {
+    await this.findOne(id);
+    const { tanggalkhusus, ...rest } = updateDto;
+    
     return this.prisma.ibadahKhusus.update({
       where: { id },
-      data: updateDto,
+      data: {
+        ...rest,
+        tanggalkhusus: tanggalkhusus ? new Date(tanggalkhusus) : undefined,
+      },
     });
   }
 
-  remove(id: string) {
+  async remove(id: string) {
+    await this.findOne(id);
     return this.prisma.ibadahKhusus.delete({
       where: { id },
     });

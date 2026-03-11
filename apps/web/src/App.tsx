@@ -12,7 +12,6 @@ import NotFound from "./pages/NotFound";
 import { AuthGuard } from "./components/auth/AuthGuard";
 import { useAuthStore } from "./stores/auth-store";
 import { EmptyState } from "@/components/common/EmptyState";
-import { Church, Users, Wallet, Calendar, Image } from "lucide-react";
 
 // Existing Pages
 import BannerTopPage from "./pages/cms/banner/BannerTopPage";
@@ -64,11 +63,11 @@ import QrSessionFormPage from "./pages/cms/kehadiran/QrSessionFormPage";
 import KehadiranHistoryPage from "./pages/cms/kehadiran/KehadiranHistoryPage";
 import KehadiranScanPage from "./pages/cms/kehadiran/KehadiranScanPage";
 
-// NEW: Alkitab & Doa Pages
+// Alkitab & Doa Pages
 import AlkitabPage from "./pages/cms/alkitab/AlkitabPage";
 import PokokDoaPage from "./pages/cms/doa/PokokDoaPage";
 
-// NEW: Keuangan Pages
+// Keuangan Pages
 import TransaksiPage from "./pages/cms/keuangan/TransaksiPage";
 import PersembahanPage from "./pages/cms/keuangan/PersembahanPage";
 import LaporanKeuanganPage from "./pages/cms/keuangan/LaporanKeuanganPage";
@@ -78,6 +77,7 @@ import WilayahFormPage from "./pages/cms/wilayah/WilayahFormPage";
 import KelompokListPage from "./pages/cms/kelompok/KelompokListPage";
 import KelompokFormPage from "./pages/cms/kelompok/KelompokFormPage";
 import ReportsPage from "./pages/cms/reports/ReportsPage";
+import TentangGerejaPage from "./pages/cms/tentang-gereja/TentangGerejaPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -96,7 +96,6 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Generic Placeholder Component
 const ModulePlaceholder = ({ title, icon: Icon }: { title: string, icon?: any }) => (
   <div className="p-4 animate-in fade-in duration-300">
     <EmptyState 
@@ -151,59 +150,12 @@ const App = () => (
                 <Route path="/pepanthan/create" element={<PepanthanFormPage />} />
                 <Route path="/pepanthan/edit/:id" element={<PepanthanFormPage />} />
                 
-                {/* Ibadah Umum */}
-                <Route path="/ibadah-umum" element={<IbadahUmumListPage />} />
-                <Route path="/ibadah-umum/create" element={<IbadahUmumFormPage />} />
-                <Route path="/ibadah-umum/edit/:id" element={<IbadahUmumFormPage />} />
-                
-                {/* Ibadah Pepanthan */}
-                <Route path="/ibadah-pepanthan" element={<IbadahPepanthanListPage />} />
-                <Route path="/ibadah-pepanthan/create" element={<IbadahPepanthanFormPage />} />
-                <Route path="/ibadah-pepanthan/edit/:id" element={<IbadahPepanthanFormPage />} />
-                
-                {/* Ibadah Wilayah */}
-                <Route path="/ibadah-wilayah" element={<IbadahWilayahListPage />} />
-                <Route path="/ibadah-wilayah/create" element={<IbadahWilayahFormPage />} />
-                <Route path="/ibadah-wilayah/edit/:id" element={<IbadahWilayahFormPage />} />
-                
-                {/* Ibadah Kelompok */}
-                <Route path="/ibadah-kelompok" element={<IbadahKelompokListPage />} />
-                <Route path="/ibadah-kelompok/create" element={<IbadahKelompokFormPage />} />
-                <Route path="/ibadah-kelompok/edit/:id" element={<IbadahKelompokFormPage />} />
-
-                {/* Ibadah Khusus */}
-                <Route path="/ibadah-khusus" element={<IbadahKhususListPage />} />
-                <Route path="/ibadah-khusus/create" element={<IbadahKhususFormPage />} />
-                <Route path="/ibadah-khusus/edit/:id" element={<IbadahKhususFormPage />} />
-
-                {/* Pendalaman Alkitab */}
-                <Route path="/pendalaman-alkitab" element={<PendalamanAlkitabListPage />} />
-                <Route path="/pendalaman-alkitab/create" element={<PendalamanAlkitabFormPage />} />
-                <Route path="/pendalaman-alkitab/edit/:id" element={<PendalamanAlkitabFormPage />} />
-                
-                {/* Kehadiran */}
-                <Route path="/kehadiran/sesi" element={<QrSessionListPage />} />
-                <Route path="/kehadiran/sesi/create" element={<QrSessionFormPage />} />
-                <Route path="/kehadiran/sesi/edit/:id" element={<QrSessionFormPage />} />
-                <Route path="/kehadiran/riwayat" element={<KehadiranHistoryPage />} />
-                <Route path="/kehadiran/scan" element={<KehadiranScanPage />} />
-                
                 {/* Pelayanan & SDM */}
                 <Route path="/pelayan" element={<DaftarPelayananPage />} />
                 <Route path="/pelayan/create" element={<PelayananFormPage />} />
                 <Route path="/pelayan/edit/:id" element={<PelayananFormPage />} />
                 <Route path="/pelayan/penugasan" element={<PenugasanPage />} />
 
-import AbsensiKehadiranPage from "./pages/cms/ibadah/AbsensiKehadiranPage";
-import CreateKalenderEventPage from "./pages/cms/ibadah/CreateKalenderEventPage";
-import CreateJadwalIbadahPage from "./pages/cms/ibadah/CreateJadwalIbadahPage";
-import CreateKebaktianMingguPage from "./pages/cms/ibadah/CreateKebaktianMingguPage";
-import CreateAbsensiKehadiranPage from "./pages/cms/ibadah/CreateAbsensiKehadiranPage";
-import DaftarDivisiPage from "./pages/cms/divisi/DaftarDivisiPage";
-import AnggotaTimPage from "./pages/cms/divisi/AnggotaTimPage";
-import ArtikelRenunganPage from "./pages/cms/konten/ArtikelRenunganPage";
-import MediaGaleriPage from "./pages/cms/konten/MediaGaleriPage";
-// ...
                 {/* Pelayanan & Ibadah */}
                 <Route path="/event/kalender" element={<KalenderEventPage />} />
                 <Route path="/event/kalender/create" element={<CreateKalenderEventPage />} />
@@ -214,8 +166,35 @@ import MediaGaleriPage from "./pages/cms/konten/MediaGaleriPage";
                 <Route path="/ibadah/kehadiran" element={<AbsensiKehadiranPage />} />
                 <Route path="/ibadah/kehadiran/create" element={<CreateAbsensiKehadiranPage />} />
                 
+                {/* Ibadah Lanjutan */}
+                <Route path="/ibadah-umum" element={<IbadahUmumListPage />} />
+                <Route path="/ibadah-umum/create" element={<IbadahUmumFormPage />} />
+                <Route path="/ibadah-umum/edit/:id" element={<IbadahUmumFormPage />} />
+                <Route path="/ibadah-pepanthan" element={<IbadahPepanthanListPage />} />
+                <Route path="/ibadah-pepanthan/create" element={<IbadahPepanthanFormPage />} />
+                <Route path="/ibadah-pepanthan/edit/:id" element={<IbadahPepanthanFormPage />} />
+                <Route path="/ibadah-wilayah" element={<IbadahWilayahListPage />} />
+                <Route path="/ibadah-wilayah/create" element={<IbadahWilayahFormPage />} />
+                <Route path="/ibadah-wilayah/edit/:id" element={<IbadahWilayahFormPage />} />
+                <Route path="/ibadah-kelompok" element={<IbadahKelompokListPage />} />
+                <Route path="/ibadah-kelompok/create" element={<IbadahKelompokFormPage />} />
+                <Route path="/ibadah-kelompok/edit/:id" element={<IbadahKelompokFormPage />} />
+                <Route path="/ibadah-khusus" element={<IbadahKhususListPage />} />
+                <Route path="/ibadah-khusus/create" element={<IbadahKhususFormPage />} />
+                <Route path="/ibadah-khusus/edit/:id" element={<IbadahKhususFormPage />} />
+                <Route path="/pendalaman-alkitab" element={<PendalamanAlkitabListPage />} />
+                <Route path="/pendalaman-alkitab/create" element={<PendalamanAlkitabFormPage />} />
+                <Route path="/pendalaman-alkitab/edit/:id" element={<PendalamanAlkitabFormPage />} />
+
+                {/* Kehadiran */}
+                <Route path="/kehadiran/sesi" element={<QrSessionListPage />} />
+                <Route path="/kehadiran/sesi/create" element={<QrSessionFormPage />} />
+                <Route path="/kehadiran/sesi/edit/:id" element={<QrSessionFormPage />} />
+                <Route path="/kehadiran/riwayat" element={<KehadiranHistoryPage />} />
+                <Route path="/kehadiran/scan" element={<KehadiranScanPage />} />
+
                 {/* Divisi Pelayanan */}
-                <Route path="/pelayanan" element={<DaftarDivisiPage />} />
+                <Route path="/pelayanan/divisi" element={<DaftarDivisiPage />} />
                 <Route path="/pelayanan/anggota" element={<AnggotaTimPage />} />
 
                 {/* Konten & Media */}
@@ -241,10 +220,8 @@ import MediaGaleriPage from "./pages/cms/konten/MediaGaleriPage";
                    <Route path="/keuangan/laporan" element={<LaporanKeuanganPage />} />
                 </Route>
 
-import ReportsPage from "./pages/cms/reports/ReportsPage";
-
-// ... rest of imports
                 <Route path="/laporan" element={<ReportsPage />} />
+                <Route path="/tentang-gereja" element={<TentangGerejaPage />} />
                 <Route path="/pengaturan" element={<ModulePlaceholder title="Pengaturan Sistem" />} />
               </Route>
             </Route>

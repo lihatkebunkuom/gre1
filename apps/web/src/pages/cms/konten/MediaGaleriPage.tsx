@@ -19,7 +19,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
+  Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription
 } from "@/components/ui/form";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -38,6 +38,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -45,14 +46,14 @@ import {
 // --- Schema ---
 const formSchema = z.object({
   jenisMedia: z.string().min(1, "Pilih jenis media"),
-  judulMedia: z.string().min(3, "Judul minimal 3 karakter"),
+  judulMedia: z.string().optional().or(z.literal("")),
   deskripsiMedia: z.string().optional(),
   kategoriMedia: z.string().min(1, "Pilih kategori"),
   fileMedia: z.string().optional(),
-  thumbnailMedia: z.string().optional(),
+  thumbnailMedia: z.string().min(1, "Thumbnail wajib diunggah"),
   tanggalUpload: z.date({ required_error: "Tanggal upload wajib" }),
   durasiMedia: z.string().optional(),
-  pengunggah: z.string().min(1, "Pilih pengunggah"),
+  pengunggah: z.string().optional().or(z.literal("")),
   statusTampil: z.string().default("DITAMPILKAN"),
   tagMedia: z.string().optional(),
   catatanMedia: z.string().optional(),
@@ -61,7 +62,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 interface MediaItem extends FormValues { id: string; }
 
-const KATEGORI_MEDIA = ["Ibadah", "Event", "Pelayanan", "Komsel", "Promosi", "Dokumentasi"];
+const KATEGORI_MEDIA = ["IBADAH", "EVENT", "PELAYANAN", "LAINNYA"];
 const PENGUNGGAH_OPTIONS = ["Tim Multimedia", "Sekretariat", "Admin", "Tim Musik"];
 
 const MediaGaleriPage = () => {
@@ -124,8 +125,15 @@ const MediaGaleriPage = () => {
 
   const handleEdit = (item: MediaItem) => {
     setEditingId(item.id);
+    
+    // Konversi nilai null menjadi string kosong agar input tidak komplain
+    const sanitizedItem = Object.entries(item).reduce((acc, [key, value]) => {
+      acc[key] = value === null ? "" : value;
+      return acc;
+    }, {} as any);
+
     form.reset({
-      ...item,
+      ...sanitizedItem,
       tanggalUpload: new Date(item.tanggalUpload),
     });
     setIsDialogOpen(true);
@@ -148,9 +156,9 @@ const MediaGaleriPage = () => {
   };
 
   const filteredData = (mediaItems as MediaItem[]).filter(item => 
-    item.judulMedia.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (item.judulMedia || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.kategoriMedia.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.pengunggah.toLowerCase().includes(searchQuery.toLowerCase())
+    (item.pengunggah || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -220,7 +228,7 @@ const MediaGaleriPage = () => {
             <Card key={item.id} className="group overflow-hidden border-none shadow-md hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-muted/20">
               <div className="aspect-video relative overflow-hidden bg-muted">
                 {item.thumbnailMedia ? (
-                  <img src={item.thumbnailMedia} alt={item.judulMedia} className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105" />
+                  <img src={item.thumbnailMedia} alt={item.judulMedia || "media"} className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105" />
                 ) : (
                   <div className="flex items-center justify-center h-full w-full">
                      {getIcon(item.jenisMedia)}
@@ -262,13 +270,13 @@ const MediaGaleriPage = () => {
                           onConfirm={() => deleteMutation.mutate(item.id)}
                           variant="destructive"
                           title="Hapus Media"
-                          description={`Yakin ingin menghapus media "${item.judulMedia}"?`}
+                          description={`Yakin ingin menghapus media "${item.judulMedia || 'ini'}"?`}
                         />
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-                <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-1">{item.judulMedia}</CardTitle>
+                <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-1">{item.judulMedia || "Tanpa Judul"}</CardTitle>
                 <CardDescription className="line-clamp-2 min-h-[32px] text-xs">
                   {item.deskripsiMedia || "Tidak ada deskripsi untuk media ini."}
                 </CardDescription>
@@ -278,7 +286,7 @@ const MediaGaleriPage = () => {
                    <div className="flex flex-col gap-1">
                       <span className="text-muted-foreground uppercase tracking-wider font-semibold">Pengunggah</span>
                       <span className="font-medium flex items-center gap-1.5">
-                        <User className="h-3 w-3 text-primary" /> {item.pengunggah}
+                        <User className="h-3 w-3 text-primary" /> {item.pengunggah || "Anonim"}
                       </span>
                    </div>
                    <div className="flex flex-col gap-1">
@@ -340,7 +348,7 @@ const MediaGaleriPage = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-medium text-sm">{item.judulMedia}</span>
+                      <span className="font-medium text-sm">{item.judulMedia || "Tanpa Judul"}</span>
                       {item.fileMedia && (
                         <a href={item.fileMedia} target="_blank" rel="noreferrer" className="text-[10px] text-blue-500 hover:underline flex items-center gap-1">
                           Link File <ExternalLink className="h-2 w-2" />
@@ -357,7 +365,7 @@ const MediaGaleriPage = () => {
                   <TableCell>
                     <div className="flex flex-col text-[10px]">
                       <span>{format(new Date(item.tanggalUpload), "dd MMM yyyy", { locale: localeId })}</span>
-                      <span className="text-muted-foreground">{item.pengunggah}</span>
+                      <span className="text-muted-foreground">{item.pengunggah || "Anonim"}</span>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -395,12 +403,23 @@ const MediaGaleriPage = () => {
               <div className="grid grid-cols-3 gap-4">
                 <div className="col-span-1">
                   <FormField control={form.control} name="thumbnailMedia" render={({ field }) => (
-                    <FormItem><FormLabel>Thumbnail</FormLabel><FormControl><ImageUpload value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem>
+                    <FormItem>
+                      <FormLabel>Thumbnail <span className="text-red-500">*</span></FormLabel>
+                      <FormControl>
+                        <ImageUpload 
+                          value={field.value} 
+                          onChange={field.onChange} 
+                          placeholder="Upload Thumbnail"
+                          description="PNG, JPG (Maks 2MB)"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )} />
                 </div>
                 <div className="col-span-2 space-y-4">
                   <FormField control={form.control} name="judulMedia" render={({ field }) => (
-                    <FormItem><FormLabel>Judul Media</FormLabel><FormControl><Input placeholder="Judul Foto / Video" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Judul Media (Opsional)</FormLabel><FormControl><Input placeholder="Judul Foto / Video" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="fileMedia" render={({ field }) => (
                     <FormItem><FormLabel>Link File / URL Video (Opsional)</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
@@ -409,49 +428,28 @@ const MediaGaleriPage = () => {
               </div>
 
               <FormField control={form.control} name="deskripsiMedia" render={({ field }) => (
-                <FormItem><FormLabel>Deskripsi</FormLabel><FormControl><Textarea className="h-20 resize-none" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Deskripsi (Opsional)</FormLabel><FormControl><Textarea className="h-20 resize-none" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
 
               <div className="grid grid-cols-2 gap-4">
                  <FormField control={form.control} name="kategoriMedia" render={({ field }) => (
                    <FormItem>
                      <FormLabel>Kategori</FormLabel>
-                     <div className="space-y-2">
-                       <Select 
-                         onValueChange={(val) => {
-                           if (val === "CUSTOM") {
-                             field.onChange("");
-                           } else {
-                             field.onChange(val);
-                           }
-                         }} 
-                         value={KATEGORI_MEDIA.includes(field.value) ? field.value : (field.value === "" ? "" : "CUSTOM")}
-                       >
-                         <FormControl>
-                           <SelectTrigger>
-                             <SelectValue placeholder="Pilih Kategori" />
-                           </SelectTrigger>
-                         </FormControl>
-                         <SelectContent>
-                           {KATEGORI_MEDIA.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
-                           <SelectItem value="CUSTOM" className="text-primary font-medium">+ Input Manual</SelectItem>
-                         </SelectContent>
-                       </Select>
-                       
-                       {(!KATEGORI_MEDIA.includes(field.value) && field.value !== undefined) && (
-                         <Input 
-                           placeholder="Masukkan kategori baru..." 
-                           value={field.value} 
-                           onChange={(e) => field.onChange(e.target.value)}
-                           className="animate-in fade-in slide-in-from-top-1 duration-200"
-                         />
-                       )}
-                     </div>
+                     <Select onValueChange={field.onChange} value={field.value}>
+                       <FormControl>
+                         <SelectTrigger>
+                           <SelectValue placeholder="Pilih Kategori" />
+                         </SelectTrigger>
+                       </FormControl>
+                       <SelectContent>
+                         {KATEGORI_MEDIA.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                       </SelectContent>
+                     </Select>
                      <FormMessage />
                    </FormItem>
                  )} />
                  <FormField control={form.control} name="pengunggah" render={({ field }) => (
-                   <FormItem><FormLabel>Pengunggah</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Pilih Pengunggah" /></SelectTrigger></FormControl><SelectContent>{PENGUNGGAH_OPTIONS.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                   <FormItem><FormLabel>Pengunggah (Opsional)</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Pilih Pengunggah" /></SelectTrigger></FormControl><SelectContent>{PENGUNGGAH_OPTIONS.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                  )} />
               </div>
 

@@ -33,16 +33,19 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { ImageUpload } from "@/components/common/ImageUpload";
 
 const formSchema = z.object({
   title: z.string().min(1, { message: "Judul wajib diisi" }),
   tanggal: z.date({ required_error: "Tanggal wajib diisi" }),
   deskripsi: z.string().min(1, { message: "Deskripsi wajib diisi" }),
-  fileUrl: z.string().optional(),
+  gambarUrl: z.string().optional().or(z.literal("")),
+  fileUrl: z.string().optional().or(z.literal("")),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -90,12 +93,12 @@ const BuletinPage = () => {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { title: "", deskripsi: "", tanggal: new Date(), fileUrl: "" },
+    defaultValues: { title: "", deskripsi: "", tanggal: new Date(), gambarUrl: "", fileUrl: "" },
   });
 
   const handleAddNew = () => {
     setEditingId(null);
-    form.reset({ title: "", deskripsi: "", tanggal: new Date(), fileUrl: "" });
+    form.reset({ title: "", deskripsi: "", tanggal: new Date(), gambarUrl: "", fileUrl: "" });
     setIsDialogOpen(true);
   };
 
@@ -113,6 +116,23 @@ const BuletinPage = () => {
       updateMutation.mutate({ id: editingId, values });
     } else {
       createMutation.mutate(values);
+    }
+  };
+
+  const handleDownload = (url: string, title: string) => {
+    if (!url) return;
+    
+    // Check if it's a base64 string
+    if (url.startsWith("data:")) {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      // Normal URL
+      window.open(url, "_blank");
     }
   };
 
@@ -193,6 +213,11 @@ const BuletinPage = () => {
           {sortedData.map((item) => (
             <Card key={item.id} className="group overflow-hidden border-none shadow-md hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-muted/20">
               <div className="h-1.5 w-full bg-orange-500/20 group-hover:bg-orange-500 transition-colors" />
+              {item.gambarUrl && (
+                <div className="aspect-[4/3] relative overflow-hidden bg-muted border-b">
+                  <img src={item.gambarUrl} alt={item.title} className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105" />
+                </div>
+              )}
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <Badge variant="secondary" className="mb-2 font-medium bg-orange-100 text-orange-700 border-none">
@@ -209,8 +234,8 @@ const BuletinPage = () => {
                         <Edit className="mr-2 h-4 w-4" /> Edit Buletin
                       </DropdownMenuItem>
                       {item.fileUrl && (
-                        <DropdownMenuItem onClick={() => window.open(item.fileUrl, '_blank')}>
-                          <ExternalLink className="mr-2 h-4 w-4" /> Buka PDF
+                        <DropdownMenuItem onClick={() => handleDownload(item.fileUrl!, item.title)}>
+                          <Download className="mr-2 h-4 w-4" /> Download PDF
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
@@ -237,7 +262,7 @@ const BuletinPage = () => {
                   <span className="font-medium text-muted-foreground">Terbit: {format(new Date(item.tanggal), "dd MMMM yyyy", { locale: localeId })}</span>
                 </div>
                 {item.fileUrl && (
-                  <Button variant="outline" size="sm" className="w-full text-xs gap-2" onClick={() => window.open(item.fileUrl, '_blank')}>
+                  <Button variant="outline" size="sm" className="w-full text-xs gap-2" onClick={() => handleDownload(item.fileUrl!, item.title)}>
                     <Download className="h-3 w-3" /> Download PDF
                   </Button>
                 )}
@@ -259,7 +284,7 @@ const BuletinPage = () => {
                   <div className="flex items-center gap-2">Tanggal Terbit <ArrowUpDown className="h-3 w-3" /></div>
                 </TableHead>
                 <TableHead>Judul Buletin</TableHead>
-                <TableHead>Isi Ringkas</TableHead>
+                <TableHead>Deskripsi</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
             </TableHeader>
@@ -273,7 +298,7 @@ const BuletinPage = () => {
                   <TableCell className="max-w-md truncate text-muted-foreground">{item.deskripsi}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      {item.fileUrl && <Button variant="ghost" size="icon" title="Buka PDF" onClick={() => window.open(item.fileUrl, '_blank')}><ExternalLink className="h-4 w-4 text-blue-500" /></Button>}
+                      {item.fileUrl && <Button variant="ghost" size="icon" title="Download PDF" onClick={() => handleDownload(item.fileUrl!, item.title)}><Download className="h-4 w-4 text-blue-500" /></Button>}
                       <Button variant="ghost" size="icon" onClick={() => handleEdit(item)}><Edit className="h-4 w-4 text-blue-500" /></Button>
                       <ConfirmDialog trigger={<Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button>} onConfirm={() => deleteMutation.mutate(item.id)} variant="destructive" />
                     </div>
@@ -286,13 +311,27 @@ const BuletinPage = () => {
       )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingId ? "Edit Buletin" : "Buletin Baru"}</DialogTitle>
             <DialogDescription>Upload warta jemaat terbaru untuk diakses jemaat.</DialogDescription>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField control={form.control} name="gambarUrl" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Gambar Sampul (Opsional)</FormLabel>
+                  <FormControl>
+                    <ImageUpload 
+                      value={field.value} 
+                      onChange={field.onChange} 
+                      placeholder="Upload Gambar Sampul"
+                      description="PNG, JPG atau WEBP (Maksimal 2MB)"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
               <FormField control={form.control} name="title" render={({ field }) => (
                 <FormItem><FormLabel>Judul Buletin</FormLabel><FormControl><Input placeholder="Contoh: Warta Jemaat Edisi..." {...field} /></FormControl><FormMessage /></FormItem>
               )} />
@@ -300,10 +339,22 @@ const BuletinPage = () => {
                 <FormItem className="flex flex-col"><FormLabel>Tanggal Terbit</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP", { locale: localeId }) : <span>Pilih tanggal</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date()} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="deskripsi" render={({ field }) => (
-                <FormItem><FormLabel>Ringkasan Isi</FormLabel><FormControl><Textarea placeholder="Ringkasan singkat isi buletin..." className="resize-none h-24" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Deskripsi</FormLabel><FormControl><Textarea placeholder="Tuliskan deskripsi atau ringkasan isi buletin..." className="resize-none h-24" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="fileUrl" render={({ field }) => (
-                <FormItem><FormLabel>File URL (PDF)</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem>
+                  <FormLabel>File Buletin (PDF)</FormLabel>
+                  <FormControl>
+                    <ImageUpload 
+                      value={field.value} 
+                      onChange={field.onChange} 
+                      accept="application/pdf"
+                      placeholder="Klik untuk upload file PDF"
+                      description="Hanya file dokumen PDF (Maksimal 5MB)"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )} />
               <DialogFooter><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Batal</Button><Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>Simpan</Button></DialogFooter>
             </form>

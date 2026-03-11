@@ -19,7 +19,8 @@ import { Badge } from "@/components/ui/badge";
 interface PendalamanAlkitab {
   id: string;
   judul?: string;
-  waktu?: string;
+  waktuMulai?: string;
+  tanggalpa?: string;
   lokasi?: string;
   keterangan?: string;
   pepanthan?: { namaPepanthan: string };
@@ -144,9 +145,16 @@ const PendalamanAlkitabListPage = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col gap-1">
                       <span className="font-semibold">{item.judul || '-'}</span>
-                      <span className="text-xs text-muted-foreground">{formatWaktu(item.waktu)}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          {item.tanggalpa ? format(new Date(item.tanggalpa), "EEEE, d MMM yyyy", { locale: idLocale }) : '-'}
+                        </span>
+                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono">
+                          {item.waktuMulai || '-'} WIB
+                        </Badge>
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell><span className="text-sm">{item.lokasi || '-'}</span></TableCell>

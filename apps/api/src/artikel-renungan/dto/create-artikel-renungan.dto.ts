@@ -16,36 +16,44 @@ export class CreateArtikelRenunganDto {
   @IsOptional()
   subJudul?: string;
 
-  @ApiProperty({ example: 'Pdt. Andi Wijaya' })
+  @ApiPropertyOptional({ example: 'Pdt. Andi Wijaya' })
   @IsString()
-  penulis: string;
+  @IsOptional()
+  penulis?: string;
 
   @ApiProperty({ example: '2023-11-20T00:00:00.000Z' })
   @Type(() => Date)
   @IsDate()
   tanggalTerbit: Date;
 
-  @ApiProperty({ example: 'Iman' })
+  @ApiPropertyOptional({ example: 'Iman' })
   @IsString()
-  kategoriKonten: string;
+  @IsOptional()
+  kategoriKonten?: string;
 
   @ApiPropertyOptional({ example: 'Yohanes 15:5' })
   @IsString()
   @IsOptional()
   ayatAlkitab?: string;
 
-  @ApiProperty({ example: 'Isi renungan lengkap...' })
+  @ApiPropertyOptional({ example: 'Isi renungan lengkap...' })
   @IsString()
-  isiKonten: string;
+  @IsOptional()
+  isiKonten?: string;
 
-  @ApiProperty({ example: 'Pentingnya tinggal di dalam Kristus.' })
+  @ApiPropertyOptional({ example: 'Pentingnya tinggal di dalam Kristus.' })
   @IsString()
-  ringkasanKonten: string;
+  @IsOptional()
+  ringkasanKonten?: string;
 
   @ApiPropertyOptional({ example: 'https://example.com/image.jpg' })
   @IsString()
   @IsOptional()
   gambarSampul?: string;
+
+  @ApiProperty({ example: 'Harian', enum: ['Harian', 'Mingguan'] })
+  @IsString()
+  periode: string;
 
   @ApiPropertyOptional({ example: 'DRAFT', enum: ['DRAFT', 'TERBIT', 'ARSIP'] })
   @IsString()

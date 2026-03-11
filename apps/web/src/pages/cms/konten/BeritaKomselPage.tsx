@@ -33,6 +33,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -127,7 +128,7 @@ const BeritaKomselPage = () => {
 
   return (
     <div className="space-y-6 pb-10">
-      <PageHeader title="Berita Komsel" description="Informasi dan pengumuman seputar kegiatan komunitas sel.">
+      <PageHeader title="Berita Gereja" description="Informasi dan pengumuman seputar kegiatan gereja.">
         <Button onClick={handleAddNew} className="shadow-sm transition-all hover:shadow-md">
           <Plus className="mr-2 h-4 w-4" /> Tambah Berita
         </Button>
@@ -137,7 +138,7 @@ const BeritaKomselPage = () => {
         <div className="relative flex-1 w-full sm:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
-            placeholder="Cari berita komsel..." 
+            placeholder="Cari berita gereja..." 
             className="pl-10 h-11 bg-muted/30 border-none focus-visible:ring-primary/20" 
             value={searchQuery} 
             onChange={(e) => setSearchQuery(e.target.value)} 
@@ -171,7 +172,7 @@ const BeritaKomselPage = () => {
       {isLoading ? (
         <div className="flex flex-col h-64 items-center justify-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground animate-pulse">Menyiapkan berita komsel...</p>
+          <p className="text-muted-foreground animate-pulse">Menyiapkan berita gereja...</p>
         </div>
       ) : filteredData.length === 0 ? (
         <Card className="border-dashed py-20">
@@ -180,7 +181,7 @@ const BeritaKomselPage = () => {
                <Newspaper className="h-10 w-10 text-muted-foreground opacity-50" />
             </div>
             <div className="space-y-1">
-              <p className="font-medium text-lg">Tidak ada berita komsel</p>
+              <p className="font-medium text-lg">Tidak ada berita gereja</p>
               <p className="text-sm text-muted-foreground max-w-xs">Mulai dengan menambahkan berita baru atau periksa kata kunci pencarian Anda.</p>
             </div>
             <Button variant="outline" onClick={() => setSearchQuery("")}>Lihat Semua Berita</Button>
@@ -199,7 +200,7 @@ const BeritaKomselPage = () => {
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <Badge variant="secondary" className="mb-2 font-medium bg-primary/10 text-primary border-none">
-                    Komsel
+                    Gereja
                   </Badge>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -278,8 +279,8 @@ const BeritaKomselPage = () => {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>{editingId ? "Edit Berita" : "Tambah Berita Komsel"}</DialogTitle>
-            <DialogDescription>Bagikan informasi terbaru kepada anggota komsel.</DialogDescription>
+            <DialogTitle>{editingId ? "Edit Berita" : "Tambah Berita Gereja"}</DialogTitle>
+            <DialogDescription>Bagikan informasi terbaru kepada seluruh jemaat.</DialogDescription>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

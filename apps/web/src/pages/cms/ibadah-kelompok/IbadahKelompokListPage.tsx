@@ -19,7 +19,8 @@ import { Badge } from "@/components/ui/badge";
 interface IbadahKelompok {
   id: string;
   judul?: string;
-  waktu?: string;
+  waktuMulai?: string;
+  tanggalkelompok?: string;
   lokasi?: string;
   keterangan?: string;
   kelompokId: string;
@@ -152,14 +153,9 @@ const IbadahKelompokListPage = () => {
                     <span className="font-medium">{item.judul || '-'}</span>
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">
-                        {formatWaktu(item.waktu)}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        Pukul {formatJam(item.waktu)} WIB
-                      </span>
-                    </div>
+                    <Badge variant="outline" className="font-mono">
+                      {item.waktuMulai || '-'} WIB
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <span className="text-sm">{item.lokasi || '-'}</span>

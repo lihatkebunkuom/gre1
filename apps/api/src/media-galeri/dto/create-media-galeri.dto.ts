@@ -1,23 +1,26 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsDate, IsOptional } from 'class-validator';
+import { IsString, IsDate, IsOptional, IsNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateMediaGaleriDto {
   @ApiProperty({ example: 'Video' })
   @IsString()
+  @IsNotEmpty()
   jenisMedia: string;
 
-  @ApiProperty({ example: 'Highlight Natal 2023' })
+  @ApiPropertyOptional({ example: 'Highlight Natal 2023' })
   @IsString()
-  judulMedia: string;
+  @IsOptional()
+  judulMedia?: string;
 
   @ApiPropertyOptional({ example: 'Dokumentasi perayaan Natal.' })
   @IsString()
   @IsOptional()
   deskripsiMedia?: string;
 
-  @ApiProperty({ example: 'Event' })
+  @ApiProperty({ example: 'IBADAH', enum: ['IBADAH', 'EVENT', 'PELAYANAN', 'LAINNYA'] })
   @IsString()
+  @IsNotEmpty()
   kategoriMedia: string;
 
   @ApiPropertyOptional({ example: 'https://youtube.com/watch?v=xyz' })
@@ -25,10 +28,10 @@ export class CreateMediaGaleriDto {
   @IsOptional()
   fileMedia?: string;
 
-  @ApiPropertyOptional({ example: 'https://example.com/thumb.jpg' })
+  @ApiProperty({ example: 'https://example.com/thumb.jpg' })
   @IsString()
-  @IsOptional()
-  thumbnailMedia?: string;
+  @IsNotEmpty({ message: 'Thumbnail wajib diisi' })
+  thumbnailMedia: string;
 
   @ApiProperty({ example: '2023-12-26T00:00:00.000Z' })
   @Type(() => Date)
@@ -40,9 +43,10 @@ export class CreateMediaGaleriDto {
   @IsOptional()
   durasiMedia?: string;
 
-  @ApiProperty({ example: 'Tim Multimedia' })
+  @ApiPropertyOptional({ example: 'Tim Multimedia' })
   @IsString()
-  pengunggah: string;
+  @IsOptional()
+  pengunggah?: string;
 
   @ApiPropertyOptional({ example: 'DITAMPILKAN' })
   @IsString()

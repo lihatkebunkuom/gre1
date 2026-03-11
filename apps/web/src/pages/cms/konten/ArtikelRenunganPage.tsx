@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
-import { Edit, Plus, Trash2, Eye, BookOpen, CalendarIcon, Search, Filter, Loader2, MoreHorizontal, User, Tag, Clock } from "lucide-react";
+import { Edit, Plus, Trash2, Eye, BookOpen, CalendarIcon, Search, Filter, Loader2, MoreHorizontal, User, Tag, Clock, Info } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -48,13 +48,14 @@ const formSchema = z.object({
   jenisKonten: z.string().min(1, "Pilih jenis konten"),
   judulKonten: z.string().min(3, "Judul minimal 3 karakter"),
   subJudul: z.string().optional(),
-  penulis: z.string().min(1, "Pilih penulis"),
+  penulis: z.string().optional(),
   tanggalTerbit: z.date({ required_error: "Tanggal terbit wajib" }),
-  kategoriKonten: z.string().min(1, "Pilih kategori"),
+  kategoriKonten: z.string().optional(),
   ayatAlkitab: z.string().optional(),
-  isiKonten: z.string().min(10, "Isi konten minimal 10 karakter"),
-  ringkasanKonten: z.string().min(5, "Ringkasan wajib diisi"),
+  isiKonten: z.string().optional(),
+  ringkasanKonten: z.string().optional(),
   gambarSampul: z.string().optional(),
+  periode: z.string().min(1, "Pilih periode"),
   statusPublikasi: z.string().default("DRAFT"),
   tag: z.string().optional(),
   jumlahDibaca: z.coerce.number().default(0),
@@ -64,7 +65,6 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 interface Artikel extends FormValues { id: string; }
 
-const PENULIS_OPTIONS = ["Pdt. Andi Wijaya", "Pdt. Budi", "Sdr. Kevin", "Ibu Sarah"];
 const KATEGORI_OPTIONS = ["Iman", "Doa", "Keluarga", "Pemuda", "Pelayanan", "Kesaksian"];
 
 const ArtikelRenunganPage = () => {
@@ -109,9 +109,9 @@ const ArtikelRenunganPage = () => {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      jenisKonten: "Renungan", judulKonten: "", subJudul: "",
+      jenisKonten: "Artikel", judulKonten: "", subJudul: "",
       penulis: "", tanggalTerbit: new Date(), kategoriKonten: "", ayatAlkitab: "",
-      isiKonten: "", ringkasanKonten: "", gambarSampul: "", statusPublikasi: "DRAFT",
+      isiKonten: "", ringkasanKonten: "", gambarSampul: "", periode: "Harian", statusPublikasi: "DRAFT",
       tag: "", jumlahDibaca: 0, catatanEditor: ""
     },
   });
@@ -119,9 +119,9 @@ const ArtikelRenunganPage = () => {
   const handleAddNew = () => {
     setEditingId(null);
     form.reset({
-      jenisKonten: "Renungan", judulKonten: "", subJudul: "",
+      jenisKonten: "Artikel", judulKonten: "", subJudul: "",
       penulis: "", tanggalTerbit: new Date(), kategoriKonten: "", ayatAlkitab: "",
-      isiKonten: "", ringkasanKonten: "", gambarSampul: "", statusPublikasi: "DRAFT",
+      isiKonten: "", ringkasanKonten: "", gambarSampul: "", periode: "Harian", statusPublikasi: "DRAFT",
       tag: "", jumlahDibaca: 0, catatanEditor: ""
     });
     setIsDialogOpen(true);
@@ -129,8 +129,15 @@ const ArtikelRenunganPage = () => {
 
   const handleEdit = (item: Artikel) => {
     setEditingId(item.id);
+    
+    // Konversi nilai null menjadi string kosong agar input tidak komplain
+    const sanitizedItem = Object.entries(item).reduce((acc, [key, value]) => {
+      acc[key] = value === null ? "" : value;
+      return acc;
+    }, {} as any);
+
     form.reset({
-      ...item,
+      ...sanitizedItem,
       tanggalTerbit: new Date(item.tanggalTerbit),
     });
     setIsDialogOpen(true);
@@ -146,8 +153,8 @@ const ArtikelRenunganPage = () => {
 
   const filteredArticles = (articles as Artikel[]).filter(item => 
     item.judulKonten.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.penulis.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.kategoriKonten.toLowerCase().includes(searchQuery.toLowerCase())
+    (item.penulis && item.penulis.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (item.kategoriKonten && item.kategoriKonten.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -222,7 +229,7 @@ const ArtikelRenunganPage = () => {
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <Badge variant="secondary" className="mb-2 font-medium bg-primary/10 text-primary border-none">
-                    {item.kategoriKonten}
+                    {item.kategoriKonten || "Umum"}
                   </Badge>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -257,7 +264,7 @@ const ArtikelRenunganPage = () => {
                    <div className="flex flex-col gap-1">
                       <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Penulis</span>
                       <span className="font-medium flex items-center gap-1.5">
-                        <User className="h-3.5 w-3.5 text-primary" /> {item.penulis}
+                        <User className="h-3.5 w-3.5 text-primary" /> {item.penulis || "Anonim"}
                       </span>
                    </div>
                    <div className="flex flex-col gap-1">
@@ -326,7 +333,7 @@ const ArtikelRenunganPage = () => {
                       {item.jenisKonten}
                     </Badge>
                   </TableCell>
-                  <TableCell>{item.penulis}</TableCell>
+                  <TableCell>{item.penulis || "-"}</TableCell>
                   <TableCell>{format(new Date(item.tanggalTerbit), "dd MMM yyyy", { locale: localeId })}</TableCell>
                   <TableCell>
                     <Badge variant={item.statusPublikasi === "TERBIT" ? "default" : item.statusPublikasi === "DRAFT" ? "secondary" : "outline"}>
@@ -362,11 +369,18 @@ const ArtikelRenunganPage = () => {
                   <FormField control={form.control} name="gambarSampul" render={({ field }) => (
                     <FormItem><FormLabel>Gambar Sampul</FormLabel><FormControl><ImageUpload value={field.value} onChange={field.onChange} /></FormControl></FormItem>
                   )} />
+                  
+                  {form.watch("jenisKonten") === "Renungan" && (
+                    <FormField control={form.control} name="periode" render={({ field }) => (
+                      <FormItem><FormLabel>Periode <span className="text-red-500">*</span></FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Pilih Periode" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Harian">Harian</SelectItem><SelectItem value="Mingguan">Mingguan</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                    )} />
+                  )}
+
                   <FormField control={form.control} name="jenisKonten" render={({ field }) => (
                     <FormItem><FormLabel>Jenis</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Pilih" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Artikel">Artikel</SelectItem><SelectItem value="Renungan">Renungan</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="kategoriKonten" render={({ field }) => (
-                    <FormItem><FormLabel>Kategori</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Pilih" /></SelectTrigger></FormControl><SelectContent>{KATEGORI_OPTIONS.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Kategori (Opsional)</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Pilih" /></SelectTrigger></FormControl><SelectContent>{KATEGORI_OPTIONS.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="statusPublikasi" render={({ field }) => (
                     <FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Pilih" /></SelectTrigger></FormControl><SelectContent><SelectItem value="DRAFT">Draft</SelectItem><SelectItem value="TERBIT">Terbit</SelectItem><SelectItem value="ARSIP">Arsip</SelectItem></SelectContent></Select><FormMessage /></FormItem>
@@ -392,7 +406,7 @@ const ArtikelRenunganPage = () => {
                   
                   <div className="grid grid-cols-2 gap-4">
                      <FormField control={form.control} name="penulis" render={({ field }) => (
-                       <FormItem><FormLabel>Penulis</FormLabel><FormControl><Input placeholder="Nama penulis..." {...field} /></FormControl><FormMessage /></FormItem>
+                       <FormItem><FormLabel>Penulis (Opsional)</FormLabel><FormControl><Input placeholder="Nama penulis..." {...field} /></FormControl><FormMessage /></FormItem>
                      )} />
                      <FormField control={form.control} name="tanggalTerbit" render={({ field }) => (
                         <FormItem className="flex flex-col"><FormLabel>Tanggal Terbit</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP", { locale: localeId }) : <span>Pilih tanggal</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>
@@ -400,11 +414,11 @@ const ArtikelRenunganPage = () => {
                   </div>
 
                   <FormField control={form.control} name="ringkasanKonten" render={({ field }) => (
-                    <FormItem><FormLabel>Ringkasan / Excerpt</FormLabel><FormControl><Textarea className="h-20 resize-none" placeholder="Ringkasan singkat untuk tampilan kartu..." {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Ringkasan / Excerpt (Opsional)</FormLabel><FormControl><Textarea className="h-20 resize-none" placeholder="Ringkasan singkat untuk tampilan kartu..." {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   
                   <FormField control={form.control} name="isiKonten" render={({ field }) => (
-                    <FormItem><FormLabel>Isi Konten (Editor)</FormLabel><FormControl><Textarea className="h-64 font-mono text-sm" placeholder="Tulis konten lengkap di sini..." {...field} /></FormControl><FormDescription>Gunakan format Markdown atau HTML sederhana.</FormDescription><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Isi Konten (Editor) (Opsional)</FormLabel><FormControl><Textarea className="h-64 font-mono text-sm" placeholder="Tulis konten lengkap di sini..." {...field} /></FormControl><FormDescription>Gunakan format Markdown atau HTML sederhana.</FormDescription><FormMessage /></FormItem>
                   )} />
 
                   <FormField control={form.control} name="catatanEditor" render={({ field }) => (

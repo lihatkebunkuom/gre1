@@ -2,9 +2,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Calendar as CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { id as localeId } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,17 +22,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { apiClient } from "@/services/api-client";
+import { cn } from "@/lib/utils";
 
 const paSchema = z.object({
-  judul: z.string().min(1, "Judul harus diisi"),
-  waktu: z.string().min(1, "Waktu harus diisi"),
-  lokasi: z.string().min(1, "Lokasi harus diisi"),
+  judul: z.string().min(1, "Judul ibadah wajib diisi"),
+  waktuMulai: z.string().min(1, "Waktu mulai wajib diisi"),
+  lokasi: z.string().min(1, "Lokasi wajib diisi"),
   keterangan: z.string().optional(),
   pepanthanId: z.string().optional(),
   wilayahId: z.string().optional(),
   kelompokId: z.string().optional(),
   komisiId: z.string().optional(),
+  bahasapa: z.string().optional(),
+  tanggalpa: z.date().optional().nullable(),
+  petugaspa: z.string().optional(),
 });
 
 type PAFormValues = z.infer<typeof paSchema>;
@@ -44,8 +52,17 @@ const PendalamanAlkitabFormPage = () => {
   const form = useForm<PAFormValues>({
     resolver: zodResolver(paSchema),
     defaultValues: {
-      judul: "", waktu: "", lokasi: "", keterangan: "",
-      pepanthanId: "", wilayahId: "", kelompokId: "", komisiId: "",
+      judul: "", 
+      waktuMulai: "", 
+      lokasi: "", 
+      keterangan: "",
+      pepanthanId: "", 
+      wilayahId: "", 
+      kelompokId: "", 
+      komisiId: "",
+      bahasapa: "",
+      tanggalpa: null,
+      petugaspa: "",
     },
   });
 
@@ -60,22 +77,18 @@ const PendalamanAlkitabFormPage = () => {
     queryKey: ['pendalaman-alkitab', id],
     queryFn: async () => {
       const data = await apiClient.get<any>(`/pendalaman-alkitab/${id}`);
-      let formattedDate = "";
-      if (data.waktu) {
-        const date = new Date(data.waktu);
-        if (!isNaN(date.getTime())) {
-          formattedDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
-        }
-      }
       form.reset({
         judul: data.judul || "",
-        waktu: formattedDate,
+        waktuMulai: data.waktuMulai || "",
         lokasi: data.lokasi || "",
         keterangan: data.keterangan || "",
         pepanthanId: data.pepanthanId || "",
         wilayahId: data.wilayahId || "",
         kelompokId: data.kelompokId || "",
         komisiId: data.komisiId || "",
+        bahasapa: data.bahasapa || "",
+        tanggalpa: data.tanggalpa ? new Date(data.tanggalpa) : null,
+        petugaspa: data.petugaspa || "",
       });
       return data;
     },
@@ -87,17 +100,17 @@ const PendalamanAlkitabFormPage = () => {
       // Bersihkan nilai "none" agar menjadi null sebelum dikirim
       const cleanValue = (val?: string) => (val === "none" || val === "" ? null : val);
 
-      const data = {
+      const payload = {
         ...values,
-        waktu: new Date(values.waktu).toISOString(),
+        tanggalpa: values.tanggalpa ? format(values.tanggalpa, "yyyy-MM-dd") : null,
         pepanthanId: cleanValue(values.pepanthanId),
         wilayahId: cleanValue(values.wilayahId),
         kelompokId: cleanValue(values.kelompokId),
         komisiId: cleanValue(values.komisiId),
       };
       
-      if (isEdit) return apiClient.patch(`/pendalaman-alkitab/${id}`, data);
-      return apiClient.post("/pendalaman-alkitab", data);
+      if (isEdit) return apiClient.patch(`/pendalaman-alkitab/${id}`, payload);
+      return apiClient.post("/pendalaman-alkitab", payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendalaman-alkitab'] });
@@ -105,24 +118,14 @@ const PendalamanAlkitabFormPage = () => {
       navigate("/pendalaman-alkitab");
     },
     onError: (error: any) => {
-      const errorData = error.response?.data?.message;
-      let errorMessage = "Terjadi kesalahan";
-
-      if (Array.isArray(errorData)) {
-        // Jika error validasi dari NestJS (array of objects)
-        errorMessage = errorData.map((err: any) => `${err.property}: ${err.message}`).join(", ");
-      } else if (typeof errorData === 'string') {
-        errorMessage = errorData;
-      }
-      
-      toast.error(errorMessage);
+      toast.error(error.response?.data?.message || "Terjadi kesalahan");
     }
   });
 
   if (isEdit && isLoadingData) return <div className="h-64 flex justify-center items-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto pb-10">
+    <div className="space-y-6 max-w-2xl mx-auto pb-20">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate("/pendalaman-alkitab")}><ArrowLeft className="h-5 w-5" /></Button>
         <div>
@@ -187,14 +190,98 @@ const PendalamanAlkitabFormPage = () => {
               </div>
 
               <FormField control={form.control} name="judul" render={({ field }) => (
-                <FormItem><FormLabel>Judul PA</FormLabel><FormControl><Input placeholder="Contoh: PA Wilayah X" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Judul PA <span className="text-red-500">*</span></FormLabel><FormControl><Input placeholder="Contoh: PA Wilayah X" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
-              <FormField control={form.control} name="waktu" render={({ field }) => (
-                <FormItem><FormLabel>Tanggal & Jam</FormLabel><FormControl><Input type="datetime-local" {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="tanggalpa"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Tanggal</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP", { locale: localeId })
+                              ) : (
+                                <span>Pilih tanggal</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value || undefined}
+                            onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="waktuMulai"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Waktu Mulai <span className="text-red-500">*</span></FormLabel>
+                      <FormControl>
+                        <Input type="time" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField control={form.control} name="lokasi" render={({ field }) => (
-                <FormItem><FormLabel>Lokasi PA</FormLabel><FormControl><Input placeholder="Contoh: Rumah Bpk. Y" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Lokasi PA <span className="text-red-500">*</span></FormLabel><FormControl><Input placeholder="Contoh: Rumah Bpk. Y" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="bahasapa"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Bahasa</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Contoh: Indonesia / Jawa" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="petugaspa"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Petugas</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Contoh: Pdt. Budi" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField control={form.control} name="keterangan" render={({ field }) => (
                 <FormItem><FormLabel>Keterangan</FormLabel><FormControl><Textarea placeholder="Informasi tambahan..." className="min-h-[100px]" {...field} /></FormControl><FormMessage /></FormItem>
               )} />

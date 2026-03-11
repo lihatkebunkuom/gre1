@@ -221,7 +221,7 @@ export const SIDEBAR_GROUPS: NavGroup[] = [
         roles: ['ADMIN', 'SEKRETARIS', 'GEMBALA'],
         items: [
           { title: "Artikel & Renungan", href: "/konten/artikel", roles: [] },
-          { title: "Berita Komsel", href: "/konten/komsel", roles: [] },
+          { title: "Berita Gereja", href: "/konten/komsel", roles: [] },
           { title: "Buletin GKJ", href: "/konten/buletin", roles: [] },
           { title: "Media & Galeri", href: "/konten/media", roles: [] },
         ]
@@ -281,6 +281,12 @@ export const SIDEBAR_GROUPS: NavGroup[] = [
         href: "/pengaturan", 
         icon: Settings, 
         roles: ['ADMIN'] 
+      },
+      { 
+        title: "Tentang Gereja", 
+        href: "/tentang-gereja", 
+        icon: FileText, 
+        roles: ['ADMIN', 'SEKRETARIS'] 
       },
     ]
   }

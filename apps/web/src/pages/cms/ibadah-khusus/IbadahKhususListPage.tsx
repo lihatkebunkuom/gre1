@@ -14,11 +14,13 @@ import {
 } from "@/components/ui/table";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { apiClient } from "@/services/api-client";
+import { Badge } from "@/components/ui/badge";
 
 interface IbadahKhusus {
   id: string;
   judul?: string;
-  waktu?: string;
+  waktuMulai?: string;
+  tanggalkhusus?: string;
   lokasi?: string;
   keterangan?: string;
   createdAt: string;
@@ -143,14 +145,9 @@ const IbadahKhususListPage = () => {
                     <span className="font-medium text-base">{item.judul || '-'}</span>
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">
-                        {formatWaktu(item.waktu)}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        Pukul {formatJam(item.waktu)} WIB
-                      </span>
-                    </div>
+                    <Badge variant="outline" className="font-mono">
+                      {item.waktuMulai || '-'} WIB
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <span className="text-sm">{item.lokasi || '-'}</span>

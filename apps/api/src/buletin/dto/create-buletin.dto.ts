@@ -16,6 +16,11 @@ export class CreateBuletinDto {
   @IsString()
   deskripsi: string;
 
+  @ApiPropertyOptional({ example: 'https://example.com/cover.jpg' })
+  @IsString()
+  @IsOptional()
+  gambarUrl?: string;
+
   @ApiPropertyOptional({ example: 'https://example.com/buletin.pdf' })
   @IsString()
   @IsOptional()

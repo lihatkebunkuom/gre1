@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePendalamanAlkitabDto } from './dto/create-pendalaman-alkitab.dto';
 import { UpdatePendalamanAlkitabDto } from './dto/update-pendalaman-alkitab.dto';
@@ -7,9 +7,13 @@ import { UpdatePendalamanAlkitabDto } from './dto/update-pendalaman-alkitab.dto'
 export class PendalamanAlkitabService {
   constructor(private prisma: PrismaService) {}
 
-  create(createDto: CreatePendalamanAlkitabDto) {
+  async create(createDto: CreatePendalamanAlkitabDto) {
+    const { tanggalpa, ...rest } = createDto;
     return this.prisma.pendalamanAlkitab.create({
-      data: createDto,
+      data: {
+        ...rest,
+        tanggalpa: tanggalpa ? new Date(tanggalpa) : null,
+      },
       include: {
         pepanthan: true,
         wilayah: true,
@@ -27,12 +31,12 @@ export class PendalamanAlkitabService {
         kelompok: true,
         komisi: true,
       },
-      orderBy: { waktu: 'desc' },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
-  findOne(id: string) {
-    return this.prisma.pendalamanAlkitab.findUnique({
+  async findOne(id: string) {
+    const ibadah = await this.prisma.pendalamanAlkitab.findUnique({
       where: { id },
       include: {
         pepanthan: true,
@@ -41,12 +45,22 @@ export class PendalamanAlkitabService {
         komisi: true,
       },
     });
+    if (!ibadah) {
+      throw new NotFoundException(`PA with ID ${id} not found`);
+    }
+    return ibadah;
   }
 
-  update(id: string, updateDto: UpdatePendalamanAlkitabDto) {
+  async update(id: string, updateDto: UpdatePendalamanAlkitabDto) {
+    await this.findOne(id);
+    const { tanggalpa, ...rest } = updateDto;
+    
     return this.prisma.pendalamanAlkitab.update({
       where: { id },
-      data: updateDto,
+      data: {
+        ...rest,
+        tanggalpa: tanggalpa ? new Date(tanggalpa) : undefined,
+      },
       include: {
         pepanthan: true,
         wilayah: true,
